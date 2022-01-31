@@ -1,0 +1,9 @@
+[package]
+name = "resp3"
+description = "RESP3 protocol implementation"
+authors = ["Evgeniy Terekhin <e_terekhin@pm.me>"]
+license = "MIT"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
