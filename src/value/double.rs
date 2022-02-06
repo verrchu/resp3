@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::str::{self, FromStr};
 
 use nom::{
     branch::alt,
@@ -10,23 +10,32 @@ use nom::{
     IResult, Parser,
 };
 
-use super::DELIMITER;
+use super::{Value, DELIMITER};
 
 #[derive(Debug, PartialEq)]
-pub struct Double(f64);
+pub struct Double(pub f64);
+
+impl From<Double> for Value {
+    fn from(input: Double) -> Value {
+        Value::Double(input)
+    }
+}
 
 impl Double {
-    pub fn parse(input: &str) -> IResult<&str, Self> {
+    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         let parse_inf = pair(opt(tag("-")), tag("inf"))
             .map(|(sign, _inf)| sign.map(|_| f64::NEG_INFINITY).unwrap_or(f64::INFINITY))
             .map(Ok);
 
         let parse_num = tuple((opt(tag("-")), digit1, opt(preceded(tag("."), digit1)))).map(
-            |(sign, int, fract): (Option<&str>, &str, Option<&str>)| {
-                let n = match (sign, fract) {
-                    (Some(_sign), Some(fract)) => format!("-{int}.{fract}"),
+            |(sign, int, frac): (Option<&[u8]>, &[u8], Option<&[u8]>)| {
+                let int = unsafe { str::from_utf8_unchecked(int) };
+                let frac = unsafe { frac.map(|frac| String::from_utf8_unchecked(frac.to_vec())) };
+
+                let n = match (sign, frac) {
+                    (Some(_sign), Some(frac)) => format!("-{int}.{frac}"),
                     (Some(_sign), None) => format!("-{int}"),
-                    (None, Some(fract)) => format!("{int}.{fract}"),
+                    (None, Some(frac)) => format!("{int}.{frac}"),
                     (None, None) => int.to_string(),
                 };
 
@@ -56,24 +65,33 @@ mod tests {
 
     #[test]
     fn test_positive_number() {
-        assert_eq!(Double::parse(",1.234\r\n"), Ok(("", Double(1.234))));
+        assert_eq!(
+            Double::parse(&b",1.234\r\n"[..]),
+            Ok((&b""[..], Double(1.234)))
+        );
     }
 
     #[test]
     fn test_negative_number() {
-        assert_eq!(Double::parse(",-1.234\r\n"), Ok(("", Double(-1.234))));
+        assert_eq!(
+            Double::parse(&b",-1.234\r\n"[..]),
+            Ok((&b""[..], Double(-1.234)))
+        );
     }
 
     #[test]
     fn test_positive_infinity() {
-        assert_eq!(Double::parse(",inf\r\n"), Ok(("", Double(f64::INFINITY))));
+        assert_eq!(
+            Double::parse(&b",inf\r\n"[..]),
+            Ok((&b""[..], Double(f64::INFINITY)))
+        );
     }
 
     #[test]
     fn test_negative_infinity() {
         assert_eq!(
-            Double::parse(",-inf\r\n"),
-            Ok(("", Double(f64::NEG_INFINITY)))
+            Double::parse(&b",-inf\r\n"[..]),
+            Ok((&b""[..], Double(f64::NEG_INFINITY)))
         );
     }
 }

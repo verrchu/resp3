@@ -1,16 +1,22 @@
 use nom::{branch::alt, bytes::complete::tag, sequence::delimited, IResult, Parser};
 
-use super::DELIMITER;
+use super::{Value, DELIMITER};
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Boolean(bool);
+pub struct Boolean(pub bool);
+
+impl From<Boolean> for Value {
+    fn from(input: Boolean) -> Value {
+        Value::Boolean(input)
+    }
+}
 
 impl Boolean {
-    pub fn parse(input: &str) -> IResult<&str, Self> {
+    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         delimited(tag("#"), alt((tag("t"), tag("f"))), tag(DELIMITER))
-            .map(|value| match value {
-                "f" => Boolean(false),
-                "t" => Boolean(true),
+            .map(|value: &[u8]| match value {
+                b"f" => Boolean(false),
+                b"t" => Boolean(true),
                 _ => unreachable!(),
             })
             .parse(input)
@@ -23,7 +29,14 @@ mod tests {
 
     #[test]
     fn test_basic() {
-        assert_eq!(Boolean::parse("#t\r\n"), Ok(("", Boolean(true))));
-        assert_eq!(Boolean::parse("#f\r\n"), Ok(("", Boolean(false))));
+        assert_eq!(
+            Boolean::parse(&b"#t\r\n"[..]),
+            Ok((&b""[..], Boolean(true)))
+        );
+
+        assert_eq!(
+            Boolean::parse(&b"#f\r\n"[..]),
+            Ok((&b""[..], Boolean(false)))
+        );
     }
 }

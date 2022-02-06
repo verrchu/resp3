@@ -1,7 +1,5 @@
 use std::str::{self, FromStr};
 
-use super::DELIMITER;
-
 use bytes::Bytes;
 use nom::{
     branch::alt,
@@ -12,10 +10,18 @@ use nom::{
     Err, IResult, Parser,
 };
 
+use super::{Value, DELIMITER};
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum VerbatimString {
     Txt(Bytes),
     Mkd(Bytes),
+}
+
+impl From<VerbatimString> for Value {
+    fn from(input: VerbatimString) -> Value {
+        Value::VerbatimString(input)
+    }
 }
 
 impl VerbatimString {

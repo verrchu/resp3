@@ -1,6 +1,6 @@
 use std::str::{self, FromStr};
 
-use super::DELIMITER;
+use super::{Value, DELIMITER};
 
 use bytes::Bytes;
 use nom::{
@@ -12,7 +12,13 @@ use nom::{
 };
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct BlobString(Bytes);
+pub struct BlobString(pub Bytes);
+
+impl From<BlobString> for Value {
+    fn from(input: BlobString) -> Value {
+        Value::BlobString(input)
+    }
+}
 
 impl BlobString {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {

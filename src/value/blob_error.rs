@@ -1,6 +1,6 @@
 use std::str::{self, FromStr};
 
-use super::DELIMITER;
+use super::{Value, DELIMITER};
 
 use bytes::Bytes;
 use nom::{
@@ -18,12 +18,18 @@ static CODE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[A-Z]+").unwrap());
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct BlobError {
-    code: String,
-    msg: Bytes,
+    pub code: String,
+    pub msg: Bytes,
+}
+
+impl From<BlobError> for Value {
+    fn from(input: BlobError) -> Value {
+        Value::BlobError(input)
+    }
 }
 
 impl BlobError {
-    fn new(code: impl Into<String>, msg: impl Into<Bytes>) -> Self {
+    pub(crate) fn new(code: impl Into<String>, msg: impl Into<Bytes>) -> Self {
         Self {
             code: code.into(),
             msg: msg.into(),
@@ -33,7 +39,7 @@ impl BlobError {
 
 impl BlobError {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        let (input, len) = terminated(preceded(tag("$"), digit1), tag(DELIMITER))
+        let (input, len) = terminated(preceded(tag("!"), digit1), tag(DELIMITER))
             .parse(input)
             .and_then(|(i, o)| {
                 let o = str::from_utf8(o)
@@ -63,7 +69,7 @@ mod tests {
     #[test]
     fn test_basic() {
         assert_eq!(
-            BlobError::parse(&b"$10\r\nERR reason\r\n"[..]),
+            BlobError::parse(&b"!10\r\nERR reason\r\n"[..]),
             Ok((&b""[..], BlobError::new("ERR", b"reason".to_vec())))
         );
     }

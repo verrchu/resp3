@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::str::{self, FromStr};
 
 use nom::{
     bytes::complete::tag,
@@ -9,16 +9,25 @@ use nom::{
     IResult, Parser,
 };
 
-use super::DELIMITER;
+use super::{Value, DELIMITER};
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Number(i64);
+pub struct Number(pub i64);
+
+impl From<Number> for Value {
+    fn from(input: Number) -> Value {
+        Value::Number(input)
+    }
+}
 
 impl Number {
-    pub fn parse(input: &str) -> IResult<&str, Self> {
+    pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         delimited(tag(":"), pair(opt(tag("-")), digit1), tag(DELIMITER))
             .parse(input)
             .and_then(|(i, (sign, number))| {
+                let number = str::from_utf8(number)
+                    .map_err(|_| nom::Err::Error(Error::new(input, ErrorKind::Digit)))?;
+
                 let number = sign
                     .map(|_| format!("-{number}"))
                     .unwrap_or_else(|| number.to_string());
@@ -43,11 +52,17 @@ mod tests {
 
     #[test]
     fn test_positive_number() {
-        assert_eq!(Number::parse(":1234\r\n"), Ok(("", Number(1234))));
+        assert_eq!(
+            Number::parse(&b":1234\r\n"[..]),
+            Ok((&b""[..], Number(1234)))
+        );
     }
 
     #[test]
     fn test_negative_number() {
-        assert_eq!(Number::parse(":-1234\r\n"), Ok(("", Number(-1234))));
+        assert_eq!(
+            Number::parse(&b":-1234\r\n"[..]),
+            Ok((&b""[..], Number(-1234)))
+        );
     }
 }
