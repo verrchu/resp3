@@ -25,6 +25,16 @@ impl From<VerbatimString> for Value {
 }
 
 impl VerbatimString {
+    pub fn txt(bytes: impl Into<Bytes>) -> Self {
+        Self::Txt(bytes.into())
+    }
+
+    pub fn mkd(bytes: impl Into<Bytes>) -> Self {
+        Self::Mkd(bytes.into())
+    }
+}
+
+impl VerbatimString {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         let (input, len) = terminated(preceded(tag("="), digit1), tag(DELIMITER))
             .parse(input)

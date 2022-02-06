@@ -39,6 +39,12 @@ impl BlobString {
     }
 }
 
+impl<B: Into<Bytes>> From<B> for BlobString {
+    fn from(input: B) -> Self {
+        Self(input.into())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

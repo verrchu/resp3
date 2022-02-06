@@ -28,6 +28,7 @@ static DELIMITER: &str = "\r\n";
 
 #[derive(Debug, PartialEq)]
 pub enum Value {
+    Array(Array),
     BigNumber(BigNumber),
     BlobError(BlobError),
     BlobString(BlobString),
