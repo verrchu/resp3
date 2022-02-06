@@ -11,7 +11,7 @@ use nom::{
     Err, IResult, Parser,
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct BlobString(Bytes);
 
 impl BlobString {
@@ -30,5 +30,18 @@ impl BlobString {
         terminated(take(len), tag(DELIMITER))
             .map(|bytes: &[u8]| BlobString(Bytes::from(bytes.to_vec())))
             .parse(input)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_basic() {
+        assert_eq!(
+            BlobString::parse(&b"$11\r\nhello world\r\n"[..]),
+            Ok((&b""[..], BlobString(Bytes::from(b"hello world".to_vec()))))
+        );
     }
 }

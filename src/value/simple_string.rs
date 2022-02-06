@@ -32,7 +32,7 @@ mod tests {
     use nom::error::{Error, ErrorKind};
 
     #[test]
-    fn basic() {
+    fn test_basic() {
         assert_eq!(
             SimpleString::parse("+hello world\r\n"),
             Ok(("", SimpleString(String::from("hello world"))))
@@ -42,19 +42,13 @@ mod tests {
     #[test]
     fn test_invalid_characters() {
         assert_eq!(
-            SimpleString::parse("+he\rllo world\r\n"),
-            Err(nom::Err::Error(Error::new(
-                "\rllo world\r\n",
-                ErrorKind::Tag
-            )))
+            SimpleString::parse("+hello\nworld\r\n"),
+            Err(nom::Err::Error(Error::new("\nworld\r\n", ErrorKind::Tag)))
         );
 
         assert_eq!(
-            SimpleString::parse("+he\nllo world\r\n"),
-            Err(nom::Err::Error(Error::new(
-                "\nllo world\r\n",
-                ErrorKind::Tag
-            )))
+            SimpleString::parse("+hello\rworld\r\n"),
+            Err(nom::Err::Error(Error::new("\rworld\r\n", ErrorKind::Tag)))
         );
     }
 }
