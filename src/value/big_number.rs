@@ -13,7 +13,7 @@ use num_traits::Num;
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BigNumber(pub BigInt);
 
 impl From<BigNumber> for Value {

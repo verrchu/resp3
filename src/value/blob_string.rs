@@ -11,7 +11,7 @@ use nom::{
     Err, IResult, Parser,
 };
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BlobString(pub Bytes);
 
 impl From<BlobString> for Value {

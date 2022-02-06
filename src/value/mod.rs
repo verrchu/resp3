@@ -4,6 +4,7 @@ mod blob_error;
 mod blob_string;
 mod boolean;
 mod double;
+mod map;
 mod null;
 mod number;
 mod simple_error;
@@ -16,6 +17,7 @@ pub use blob_error::BlobError;
 pub use blob_string::BlobString;
 pub use boolean::Boolean;
 pub use double::Double;
+pub use map::Map;
 pub use null::Null;
 pub use number::Number;
 pub use simple_error::SimpleError;
@@ -26,7 +28,7 @@ use nom::{branch::alt, IResult, Parser};
 
 static DELIMITER: &str = "\r\n";
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Value {
     Array(Array),
     BigNumber(BigNumber),
@@ -34,6 +36,7 @@ pub enum Value {
     BlobString(BlobString),
     Boolean(Boolean),
     Double(Double),
+    Map(Map),
     Null,
     Number(Number),
     SimpleError(SimpleError),
@@ -44,11 +47,13 @@ pub enum Value {
 impl Value {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         alt((
+            Array::parse.map(Value::from),
             BigNumber::parse.map(Value::from),
             BlobError::parse.map(Value::from),
             BlobString::parse.map(Value::from),
             Boolean::parse.map(Value::from),
             Double::parse.map(Value::from),
+            Map::parse.map(Value::from),
             Null::parse.map(Value::from),
             Number::parse.map(Value::from),
             SimpleError::parse.map(Value::from),
@@ -65,6 +70,19 @@ mod tests {
     use bytes::Bytes;
     use num_bigint::BigInt;
     use num_traits::Num;
+
+    #[test]
+    fn test_basic_array() {
+        assert_eq!(
+            Value::parse(&b"*1\r\n+test\r\n"[..]),
+            Ok((
+                &b""[..],
+                Value::Array(Array::from([Value::SimpleString(SimpleString::from(
+                    "test"
+                ))]))
+            ))
+        );
+    }
 
     #[test]
     fn test_basic_boolean() {
@@ -113,7 +131,7 @@ mod tests {
     fn test_basic_double() {
         assert_eq!(
             Value::parse(&b",-1.234\r\n"[..]),
-            Ok((&b""[..], Value::Double(Double(-1.234))))
+            Ok((&b""[..], Value::Double(Double::from(-1.234))))
         );
     }
 

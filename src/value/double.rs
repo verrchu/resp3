@@ -12,12 +12,20 @@ use nom::{
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq)]
-pub struct Double(pub f64);
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+// stores bits forwm of f64
+pub struct Double(u64);
 
 impl From<Double> for Value {
     fn from(input: Double) -> Value {
         Value::Double(input)
+    }
+}
+
+impl Double {
+    // this method should be used to retrieve the actual f64 value
+    pub fn value(&self) -> f64 {
+        f64::from_bits(self.0)
     }
 }
 
@@ -48,14 +56,14 @@ impl Double {
             .and_then(|(i, o)| {
                 let o = o.map_err(|_| nom::Err::Error(Error::new(input, ErrorKind::Digit)))?;
 
-                Ok((i, Double(o)))
+                Ok((i, Double::from(o)))
             })
     }
 }
 
 impl From<f64> for Double {
     fn from(input: f64) -> Self {
-        Self(input)
+        Self(input.to_bits())
     }
 }
 
@@ -67,7 +75,7 @@ mod tests {
     fn test_positive_number() {
         assert_eq!(
             Double::parse(&b",1.234\r\n"[..]),
-            Ok((&b""[..], Double(1.234)))
+            Ok((&b""[..], Double::from(1.234)))
         );
     }
 
@@ -75,7 +83,7 @@ mod tests {
     fn test_negative_number() {
         assert_eq!(
             Double::parse(&b",-1.234\r\n"[..]),
-            Ok((&b""[..], Double(-1.234)))
+            Ok((&b""[..], Double::from(-1.234)))
         );
     }
 
@@ -83,7 +91,7 @@ mod tests {
     fn test_positive_infinity() {
         assert_eq!(
             Double::parse(&b",inf\r\n"[..]),
-            Ok((&b""[..], Double(f64::INFINITY)))
+            Ok((&b""[..], Double::from(f64::INFINITY)))
         );
     }
 
@@ -91,7 +99,7 @@ mod tests {
     fn test_negative_infinity() {
         assert_eq!(
             Double::parse(&b",-inf\r\n"[..]),
-            Ok((&b""[..], Double(f64::NEG_INFINITY)))
+            Ok((&b""[..], Double::from(f64::NEG_INFINITY)))
         );
     }
 }

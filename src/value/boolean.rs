@@ -2,7 +2,7 @@ use nom::{branch::alt, bytes::complete::tag, sequence::delimited, IResult, Parse
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Boolean(pub bool);
 
 impl From<Boolean> for Value {
@@ -20,6 +20,12 @@ impl Boolean {
                 _ => unreachable!(),
             })
             .parse(input)
+    }
+}
+
+impl From<bool> for Boolean {
+    fn from(input: bool) -> Self {
+        Self(input)
     }
 }
 

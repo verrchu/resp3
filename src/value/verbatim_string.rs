@@ -12,7 +12,7 @@ use nom::{
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum VerbatimString {
     Txt(Bytes),
     Mkd(Bytes),

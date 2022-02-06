@@ -11,7 +11,7 @@ use nom::{
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Number(pub i64);
 
 impl From<Number> for Value {

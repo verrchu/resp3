@@ -11,7 +11,7 @@ use nom::{
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Array(Vec<Value>);
 
 impl From<Array> for Value {
@@ -35,6 +35,12 @@ impl Array {
         println!("{len}");
 
         many_m_n(len, len, Value::parse).map(Array).parse(input)
+    }
+}
+
+impl<I: IntoIterator<Item = Value>> From<I> for Array {
+    fn from(input: I) -> Self {
+        Self(input.into_iter().collect())
     }
 }
 
@@ -75,12 +81,37 @@ mod tests {
                     Value::BlobError(BlobError::new("ERR", b"reason".to_vec())),
                     Value::BlobString(BlobString::from(b"test".to_vec())),
                     Value::Boolean(Boolean(false)),
-                    Value::Double(Double(-1.234)),
+                    Value::Double(Double::from(-1.234)),
                     Value::Null,
                     Value::Number(Number(1234)),
                     Value::SimpleError(SimpleError::new("ERR", "reason")),
                     Value::SimpleString(SimpleString::from("test")),
                     Value::VerbatimString(VerbatimString::txt(b"test".to_vec())),
+                ])
+            ))
+        );
+    }
+
+    #[test]
+    fn test_nested_array() {
+        let raw = "\
+                   *2\r\n\
+                   *1\r\n+test\r\n\
+                   *2\r\n#f\r\n:-1\r\n\
+                   ";
+
+        assert_eq!(
+            Array::parse(raw.as_bytes()),
+            Ok((
+                &b""[..],
+                Array::from([
+                    Value::Array(Array::from([Value::SimpleString(SimpleString::from(
+                        "test"
+                    ))])),
+                    Value::Array(Array::from([
+                        Value::Boolean(Boolean(false)),
+                        Value::Number(Number(-1))
+                    ])),
                 ])
             ))
         );

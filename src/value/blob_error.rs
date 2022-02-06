@@ -16,7 +16,7 @@ use regex::bytes::Regex;
 
 static CODE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[A-Z]+").unwrap());
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BlobError {
     pub code: String,
     pub msg: Bytes,

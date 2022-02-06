@@ -2,7 +2,7 @@ use nom::{bytes::complete::tag, sequence::terminated, IResult, Parser};
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Null;
 
 impl From<Null> for Value {

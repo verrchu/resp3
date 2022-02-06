@@ -9,7 +9,7 @@ static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[^\r\n]+").unwrap());
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SimpleString(String);
 
 impl From<SimpleString> for Value {

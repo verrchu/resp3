@@ -14,7 +14,7 @@ static CODE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[A-Z]+").unwrap());
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SimpleError {
     pub code: String,
     pub msg: String,
