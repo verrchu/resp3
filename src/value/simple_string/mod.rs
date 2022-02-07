@@ -1,6 +1,10 @@
-use std::str;
+#[cfg(test)]
+mod tests;
+
+use std::{io::Write, str};
 
 use anyhow::Context;
+use bytes::Bytes;
 use nom::{bytes::complete::tag, combinator::map_res, sequence::delimited, IResult, Parser};
 use nom_regex::bytes::re_find;
 use once_cell::sync::Lazy;
@@ -10,7 +14,7 @@ static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[^\r\n]+").unwrap());
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SimpleString(String);
 
 impl From<SimpleString> for Value {
@@ -38,35 +42,18 @@ impl<S: Into<String>> From<S> for SimpleString {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use nom::error::{Error, ErrorKind};
+impl TryFrom<SimpleString> for Bytes {
+    type Error = anyhow::Error;
 
-    #[test]
-    fn test_basic() {
-        assert_eq!(
-            SimpleString::parse(&b"+hello world\r\n"[..]),
-            Ok((&b""[..], SimpleString(String::from("hello world"))))
-        );
-    }
-
-    #[test]
-    fn test_invalid_characters() {
-        assert_eq!(
-            SimpleString::parse(&b"+hello\nworld\r\n"[..]),
-            Err(nom::Err::Error(Error::new(
-                &b"\nworld\r\n"[..],
-                ErrorKind::Tag
-            )))
-        );
-
-        assert_eq!(
-            SimpleString::parse(&b"+hello\rworld\r\n"[..]),
-            Err(nom::Err::Error(Error::new(
-                &b"\rworld\r\n"[..],
-                ErrorKind::Tag
-            )))
-        );
+    fn try_from(input: SimpleString) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+        buf.write("+".as_bytes())
+            .context("Value::SimpleString (buf::write)")?;
+        buf.write(input.0.as_bytes())
+            .context("Value::SimpleString (buf::write)")?;
+        buf.write("\r\n".as_bytes())
+            .context("Value::SimpleString (buf::write)")?;
+        buf.flush().context("Value::SimpleString (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }
