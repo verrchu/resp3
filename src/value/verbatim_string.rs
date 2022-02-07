@@ -1,13 +1,14 @@
 use std::str::{self, FromStr};
 
+use anyhow::Context;
 use bytes::Bytes;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
     character::complete::digit1,
-    error::{Error, ErrorKind},
-    sequence::{preceded, separated_pair, terminated},
-    Err, IResult, Parser,
+    combinator::map_res,
+    sequence::{delimited, separated_pair, terminated},
+    IResult, Parser,
 };
 
 use super::{Value, DELIMITER};
@@ -36,17 +37,17 @@ impl VerbatimString {
 
 impl VerbatimString {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        let (input, len) = terminated(preceded(tag("="), digit1), tag(DELIMITER))
-            .parse(input)
-            .and_then(|(i, o)| {
-                let o = str::from_utf8(o)
-                    .map_err(|_| Err::Error(Error::new(input, ErrorKind::Digit)))?;
-                let o = u64::from_str(o)
-                    .map_err(|_| Err::Error(Error::new(input, ErrorKind::Digit)))?;
+        let mut parse_len = {
+            let parser = delimited(tag("="), digit1, tag(DELIMITER));
 
-                Ok((i, o))
-            })?;
+            map_res(parser, |v: &[u8]| {
+                str::from_utf8(v)
+                    .context("Value::Array (str::from_utf8)")
+                    .and_then(|v| u64::from_str(v).context("Value::Array (u64::from_str)"))
+            })
+        };
 
+        let (input, len) = parse_len.parse(input)?;
         let parse_msg = separated_pair(alt((tag("txt"), tag("mkd"))), tag(":"), take(len - 4));
         let (input, (ty, msg)) = terminated(parse_msg, tag(DELIMITER)).parse(input)?;
 

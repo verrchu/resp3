@@ -1,8 +1,10 @@
 use std::str;
 
+use anyhow::Context;
 use nom::{
     bytes::complete::tag,
-    sequence::{delimited, preceded},
+    combinator::map_res,
+    sequence::{preceded, separated_pair, terminated},
     IResult, Parser,
 };
 use nom_regex::bytes::re_find;
@@ -40,16 +42,18 @@ impl SimpleError {
         let msg = Lazy::force(&MSG).to_owned();
         let code = Lazy::force(&CODE).to_owned();
 
-        let (input, code) = preceded(tag("-"), re_find(code)).parse(input)?;
+        let parse_code = preceded(tag("-"), re_find(code));
+        let parse_msg = terminated(re_find(msg), tag(DELIMITER));
 
-        delimited(tag(" "), re_find(msg), tag(DELIMITER))
-            .map(|msg| {
-                let code = unsafe { str::from_utf8_unchecked(code) };
-                let msg = unsafe { str::from_utf8_unchecked(msg) };
+        let parser = separated_pair(parse_code, tag(" "), parse_msg);
+        let mut wrapper = map_res(parser, |(code, msg)| {
+            let code = str::from_utf8(code).context("Value::SimpleError (str::from_utf8")?;
+            let msg = str::from_utf8(msg).context("Value::SimpleError (str::from_utf8")?;
 
-                SimpleError::new(code, msg)
-            })
-            .parse(input)
+            Ok::<_, anyhow::Error>(SimpleError::new(code, msg))
+        });
+
+        wrapper.parse(input)
     }
 }
 

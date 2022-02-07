@@ -1,10 +1,10 @@
 use std::str;
 
+use anyhow::Context;
 use nom::{
     bytes::complete::tag,
     character::complete::digit1,
-    combinator::opt,
-    error::{Error, ErrorKind},
+    combinator::{map_res, opt},
     sequence::{delimited, pair},
     IResult, Parser,
 };
@@ -24,18 +24,28 @@ impl From<BigNumber> for Value {
 
 impl BigNumber {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        delimited(tag("("), pair(opt(tag("-")), digit1), tag(DELIMITER))
-            .parse(input)
-            .and_then(|(i, (sign, number))| {
-                let number = unsafe { str::from_utf8_unchecked(number) };
+        let parse_val = {
+            let parser = delimited(tag("("), pair(opt(tag("-")), digit1), tag(DELIMITER));
+
+            map_res(parser, |(sign, number)| {
+                let number = str::from_utf8(number).context("Value::BigNumber (str::from_utf8)")?;
                 let number = sign
                     .map(|_| format!("-{number}"))
                     .unwrap_or_else(|| number.to_string());
                 let number = BigInt::from_str_radix(&number, 10)
-                    .map_err(|_| nom::Err::Error(Error::new(input, ErrorKind::Digit)))?;
+                    .context("Value::BigNUmber (BigInt::from_str_radix)")?;
 
-                Ok((i, BigNumber(number)))
+                Ok::<_, anyhow::Error>(number)
             })
+        };
+
+        parse_val.map(BigNumber::from).parse(input)
+    }
+}
+
+impl From<BigInt> for BigNumber {
+    fn from(input: BigInt) -> Self {
+        Self(input)
     }
 }
 

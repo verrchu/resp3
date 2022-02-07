@@ -3,10 +3,11 @@ use std::{
     str::{self, FromStr},
 };
 
+use anyhow::Context;
 use nom::{
     bytes::complete::tag,
     character::complete::digit1,
-    error::{Error, ErrorKind},
+    combinator::map_res,
     multi::many_m_n,
     sequence::{delimited, pair},
     IResult, Parser,
@@ -25,18 +26,19 @@ impl From<Map> for Value {
 
 impl Map {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        let (input, len) = delimited(tag("%"), digit1, tag(DELIMITER))
-            .parse(input)
-            .and_then(|(i, o)| {
-                let o = unsafe { str::from_utf8_unchecked(o) };
-                let o = usize::from_str(o)
-                    .map_err(|_| nom::Err::Error(Error::new(input, ErrorKind::Digit)))?;
+        let mut parse_len = {
+            let parser = delimited(tag("%"), digit1, tag(DELIMITER));
 
-                Ok((i, o))
-            })?;
+            map_res(parser, |v: &[u8]| {
+                str::from_utf8(v)
+                    .context("Value::Map (str::from_utf8)")
+                    .and_then(|v| usize::from_str(v).context("Value::Map (usize::from_str)"))
+            })
+        };
 
         let parse_kv = pair(Value::parse, Value::parse);
 
+        let (input, len) = parse_len.parse(input)?;
         many_m_n(len, len, parse_kv).map(Map::from).parse(input)
     }
 }

@@ -1,6 +1,7 @@
 use std::str;
 
-use nom::{bytes::complete::tag, sequence::delimited, IResult, Parser};
+use anyhow::Context;
+use nom::{bytes::complete::tag, combinator::map_res, sequence::delimited, IResult, Parser};
 use nom_regex::bytes::re_find;
 use once_cell::sync::Lazy;
 use regex::bytes::Regex;
@@ -22,9 +23,12 @@ impl SimpleString {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         let re = Lazy::force(&RE).to_owned();
 
-        delimited(tag("+"), re_find(re), tag(DELIMITER))
-            .map(|raw| unsafe { Self::from(str::from_utf8_unchecked(raw)) })
-            .parse(input)
+        let parser = delimited(tag("+"), re_find(re), tag(DELIMITER));
+        let wrapper = map_res(parser, |v: &[u8]| {
+            str::from_utf8(v).context("Value::SimpleString (str::from_utf8)")
+        });
+
+        wrapper.map(SimpleString::from).parse(input)
     }
 }
 
