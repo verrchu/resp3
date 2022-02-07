@@ -1,11 +1,11 @@
 use std::str::{self, FromStr};
 
+use anyhow::Context;
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::digit1,
-    combinator::opt,
-    error::{Error, ErrorKind},
+    combinator::{map_res, opt},
     sequence::{delimited, pair, preceded, tuple},
     IResult, Parser,
 };
@@ -32,32 +32,34 @@ impl Double {
 impl Double {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         let parse_inf = pair(opt(tag("-")), tag("inf"))
-            .map(|(sign, _inf)| sign.map(|_| f64::NEG_INFINITY).unwrap_or(f64::INFINITY))
-            .map(Ok);
+            .map(|(sign, _inf)| sign.map(|_| f64::NEG_INFINITY).unwrap_or(f64::INFINITY));
 
-        let parse_num = tuple((opt(tag("-")), digit1, opt(preceded(tag("."), digit1)))).map(
-            |(sign, int, frac): (Option<&[u8]>, &[u8], Option<&[u8]>)| {
-                let int = unsafe { str::from_utf8_unchecked(int) };
-                let frac = unsafe { frac.map(|frac| String::from_utf8_unchecked(frac.to_vec())) };
+        let parse_num = {
+            let parser = tuple((opt(tag("-")), digit1, opt(preceded(tag("."), digit1))));
 
-                let n = match (sign, frac) {
+            let wrapper = map_res(parser, |(sign, int, frac)| {
+                let int = str::from_utf8(int).context("Value::Double (str::from_utf8)")?;
+                let frac = frac
+                    .map(|frac| String::from_utf8(frac.to_vec()))
+                    .transpose()
+                    .context("Value::Double (String::from_utf8)")?;
+
+                Ok::<_, anyhow::Error>(match (sign, frac) {
                     (Some(_sign), Some(frac)) => format!("-{int}.{frac}"),
                     (Some(_sign), None) => format!("-{int}"),
                     (None, Some(frac)) => format!("{int}.{frac}"),
                     (None, None) => int.to_string(),
-                };
+                })
+            });
 
-                f64::from_str(&n)
-            },
-        );
+            map_res(wrapper, |number| {
+                f64::from_str(&number).context("Value::Double (f64::from_str)")
+            })
+        };
 
         delimited(tag(","), alt((parse_num, parse_inf)), tag(DELIMITER))
+            .map(Double::from)
             .parse(input)
-            .and_then(|(i, o)| {
-                let o = o.map_err(|_| nom::Err::Error(Error::new(input, ErrorKind::Digit)))?;
-
-                Ok((i, Double::from(o)))
-            })
     }
 }
 

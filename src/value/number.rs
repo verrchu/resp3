@@ -1,10 +1,10 @@
 use std::str::{self, FromStr};
 
+use anyhow::Context;
 use nom::{
     bytes::complete::tag,
     character::complete::digit1,
-    combinator::opt,
-    error::{Error, ErrorKind},
+    combinator::{map_res, opt},
     sequence::{delimited, pair},
     IResult, Parser,
 };
@@ -22,21 +22,25 @@ impl From<Number> for Value {
 
 impl Number {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        delimited(tag(":"), pair(opt(tag("-")), digit1), tag(DELIMITER))
-            .parse(input)
-            .and_then(|(i, (sign, number))| {
-                let number = str::from_utf8(number)
-                    .map_err(|_| nom::Err::Error(Error::new(input, ErrorKind::Digit)))?;
-
+        let parse_val = {
+            let parser = pair(opt(tag("-")), digit1);
+            let wrapper = map_res(parser, |(sign, number)| {
+                let number = str::from_utf8(number).context("Value::Number (str::from_utf8)")?;
                 let number = sign
                     .map(|_| format!("-{number}"))
                     .unwrap_or_else(|| number.to_string());
 
-                let o = i64::from_str(&number)
-                    .map_err(|_| nom::Err::Error(Error::new(input, ErrorKind::Digit)))?;
+                Ok::<_, anyhow::Error>(number)
+            });
 
-                Ok((i, Number(o)))
+            map_res(wrapper, |number| {
+                i64::from_str(&number).context("Value::Number (i64::from_str)")
             })
+        };
+
+        delimited(tag(":"), parse_val, tag(DELIMITER))
+            .map(Number::from)
+            .parse(input)
     }
 }
 

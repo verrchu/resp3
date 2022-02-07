@@ -7,6 +7,7 @@ mod double;
 mod map;
 mod null;
 mod number;
+mod set;
 mod simple_error;
 mod simple_string;
 mod verbatim_string;
@@ -20,6 +21,7 @@ pub use double::Double;
 pub use map::Map;
 pub use null::Null;
 pub use number::Number;
+pub use set::Set;
 pub use simple_error::SimpleError;
 pub use simple_string::SimpleString;
 pub use verbatim_string::VerbatimString;
@@ -39,6 +41,7 @@ pub enum Value {
     Map(Map),
     Null,
     Number(Number),
+    Set(Set),
     SimpleError(SimpleError),
     SimpleString(SimpleString),
     VerbatimString(VerbatimString),
@@ -56,6 +59,7 @@ impl Value {
             Map::parse.map(Value::from),
             Null::parse.map(Value::from),
             Number::parse.map(Value::from),
+            Set::parse.map(Value::from),
             SimpleError::parse.map(Value::from),
             SimpleString::parse.map(Value::from),
             VerbatimString::parse.map(Value::from),

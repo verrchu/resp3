@@ -7,8 +7,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1"
 bytes = "1"
-indexmap = "1"
 nom = "7"
 nom-regex = "0.2"
 num-bigint = "0.4"
