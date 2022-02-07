@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 4897e3544b735e7cf9cf85e3b41d9c360cd4d058f8f2460c5fe41871b41092f7 # shrinks to v = SimpleError { code: "", msg: " " }

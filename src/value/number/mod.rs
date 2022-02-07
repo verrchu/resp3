@@ -1,6 +1,13 @@
-use std::str::{self, FromStr};
+#[cfg(test)]
+mod tests;
+
+use std::{
+    io::Write,
+    str::{self, FromStr},
+};
 
 use anyhow::Context;
+use bytes::Bytes;
 use nom::{
     bytes::complete::tag,
     character::complete::digit1,
@@ -11,7 +18,7 @@ use nom::{
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Number(pub i64);
 
 impl From<Number> for Value {
@@ -50,23 +57,16 @@ impl From<i64> for Number {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl TryFrom<Number> for Bytes {
+    type Error = anyhow::Error;
 
-    #[test]
-    fn test_positive_number() {
-        assert_eq!(
-            Number::parse(&b":1234\r\n"[..]),
-            Ok((&b""[..], Number(1234)))
-        );
-    }
-
-    #[test]
-    fn test_negative_number() {
-        assert_eq!(
-            Number::parse(&b":-1234\r\n"[..]),
-            Ok((&b""[..], Number(-1234)))
-        );
+    fn try_from(input: Number) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+        buf.write(":".as_bytes())
+            .and_then(|_| buf.write(input.0.to_string().as_bytes()))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .context("Value::Number (buf::write)")?;
+        buf.flush().context("Value::Number (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }

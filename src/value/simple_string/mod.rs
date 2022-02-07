@@ -48,10 +48,8 @@ impl TryFrom<SimpleString> for Bytes {
     fn try_from(input: SimpleString) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
         buf.write("+".as_bytes())
-            .context("Value::SimpleString (buf::write)")?;
-        buf.write(input.0.as_bytes())
-            .context("Value::SimpleString (buf::write)")?;
-        buf.write("\r\n".as_bytes())
+            .and_then(|_| buf.write(input.0.as_bytes()))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
             .context("Value::SimpleString (buf::write)")?;
         buf.flush().context("Value::SimpleString (buf::flush)")?;
         Ok(Bytes::from(buf))

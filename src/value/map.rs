@@ -49,10 +49,11 @@ impl<I: IntoIterator<Item = (Value, Value)>> From<I> for Map {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use crate::value::*;
     use num_bigint::BigInt;
-    use num_traits::Num;
 
     #[test]
     fn test_empty() {
@@ -81,7 +82,7 @@ mod tests {
                 &b""[..],
                 Map::from([
                     (
-                        Value::BigNumber(BigNumber(BigInt::from_str_radix("12345", 10).unwrap())),
+                        Value::BigNumber(BigNumber(BigInt::from_str("12345").unwrap())),
                         Value::Null
                     ),
                     (
@@ -133,7 +134,7 @@ mod tests {
                 Map::from([
                     (
                         Value::Number(Number::from(0)),
-                        Value::BigNumber(BigNumber(BigInt::from_str_radix("12345", 10).unwrap()))
+                        Value::BigNumber(BigNumber(BigInt::from_str("12345").unwrap()))
                     ),
                     (
                         Value::Number(Number::from(1)),

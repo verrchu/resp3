@@ -1,4 +1,10 @@
-use std::str::{self, FromStr};
+#[cfg(test)]
+mod tests;
+
+use std::{
+    io::Write,
+    str::{self, FromStr},
+};
 
 use anyhow::Context;
 use bytes::Bytes;
@@ -13,7 +19,7 @@ use nom::{
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum VerbatimString {
     Txt(Bytes),
     Mkd(Bytes),
@@ -32,6 +38,27 @@ impl VerbatimString {
 
     pub fn mkd(bytes: impl Into<Bytes>) -> Self {
         Self::Mkd(bytes.into())
+    }
+
+    fn tag(&self) -> &'static str {
+        match self {
+            Self::Txt(_) => "txt",
+            Self::Mkd(_) => "mkd",
+        }
+    }
+
+    fn len(&self) -> usize {
+        match self {
+            Self::Txt(bytes) => bytes.len(),
+            Self::Mkd(bytes) => bytes.len(),
+        }
+    }
+
+    fn bytes(&self) -> &[u8] {
+        match self {
+            Self::Txt(bytes) => bytes,
+            Self::Mkd(bytes) => bytes,
+        }
     }
 }
 
@@ -65,26 +92,20 @@ impl VerbatimString {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl TryFrom<VerbatimString> for Bytes {
+    type Error = anyhow::Error;
 
-    #[test]
-    fn test_basic() {
-        assert_eq!(
-            VerbatimString::parse(&b"=15\r\ntxt:hello world\r\n"[..]),
-            Ok((
-                &b""[..],
-                VerbatimString::Txt(Bytes::from(b"hello world".to_vec()))
-            ))
-        );
-
-        assert_eq!(
-            VerbatimString::parse(&b"=15\r\nmkd:hello world\r\n"[..]),
-            Ok((
-                &b""[..],
-                VerbatimString::Mkd(Bytes::from(b"hello world".to_vec()))
-            ))
-        );
+    fn try_from(input: VerbatimString) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+        buf.write("=".as_bytes())
+            .and_then(|_| buf.write((input.len() + 4).to_string().as_bytes()))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .and_then(|_| buf.write(input.tag().as_bytes()))
+            .and_then(|_| buf.write(":".as_bytes()))
+            .and_then(|_| buf.write(input.bytes()))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .context("Value::VerbatimString (buf::write)")?;
+        buf.flush().context("Value::VerbatimString (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }

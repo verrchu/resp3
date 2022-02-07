@@ -45,10 +45,11 @@ impl<I: IntoIterator<Item = Value>> From<I> for Set {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use crate::value::*;
     use num_bigint::BigInt;
-    use num_traits::Num;
 
     #[test]
     fn test_empty() {
@@ -76,7 +77,7 @@ mod tests {
             Ok((
                 &b""[..],
                 Set::from([
-                    Value::BigNumber(BigNumber(BigInt::from_str_radix("12345", 10).unwrap())),
+                    Value::BigNumber(BigNumber(BigInt::from_str("12345").unwrap())),
                     Value::BlobError(BlobError::new("ERR", b"reason".to_vec())),
                     Value::BlobString(BlobString::from(b"test".to_vec())),
                     Value::Boolean(Boolean(false)),

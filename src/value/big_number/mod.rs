@@ -1,6 +1,13 @@
-use std::str;
+#[cfg(test)]
+mod tests;
+
+use std::{
+    io::Write,
+    str::{self, FromStr},
+};
 
 use anyhow::Context;
+use bytes::Bytes;
 use nom::{
     bytes::complete::tag,
     character::complete::digit1,
@@ -9,11 +16,10 @@ use nom::{
     IResult, Parser,
 };
 use num_bigint::BigInt;
-use num_traits::Num;
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BigNumber(pub BigInt);
 
 impl From<BigNumber> for Value {
@@ -32,7 +38,7 @@ impl BigNumber {
                 let number = sign
                     .map(|_| format!("-{number}"))
                     .unwrap_or_else(|| number.to_string());
-                let number = BigInt::from_str_radix(&number, 10)
+                let number = BigInt::from_str(&number)
                     .context("Value::BigNUmber (BigInt::from_str_radix)")?;
 
                 Ok::<_, anyhow::Error>(number)
@@ -49,31 +55,16 @@ impl From<BigInt> for BigNumber {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl TryFrom<BigNumber> for Bytes {
+    type Error = anyhow::Error;
 
-    #[test]
-    fn test_positive_number() {
-        let str = ['1'; 100].into_iter().collect::<String>();
-        let raw = format!("({str}\r\n");
-
-        let (i, o) = BigNumber::parse(raw.as_bytes()).unwrap();
-        assert!(i.is_empty());
-
-        assert_eq!(o.0.to_string(), str);
-    }
-
-    #[test]
-    fn test_negative_number() {
-        let str = ['1'; 100].into_iter().collect::<String>();
-        let str = format!("-{str}");
-
-        let raw = format!("({str}\r\n");
-
-        let (i, o) = BigNumber::parse(raw.as_bytes()).unwrap();
-        assert!(i.is_empty());
-
-        assert_eq!(o.0.to_string(), str);
+    fn try_from(input: BigNumber) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+        buf.write("(".as_bytes())
+            .and_then(|_| buf.write(input.0.to_string().as_bytes()))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .context("Value::BigNumber (buf::write)")?;
+        buf.flush().context("Value::Boolean (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }

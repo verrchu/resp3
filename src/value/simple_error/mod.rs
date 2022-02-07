@@ -1,6 +1,10 @@
-use std::str;
+#[cfg(test)]
+mod tests;
+
+use std::{io::Write, str};
 
 use anyhow::Context;
+use bytes::Bytes;
 use nom::{
     bytes::complete::tag,
     combinator::map_res,
@@ -16,7 +20,7 @@ static CODE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[A-Z]+").unwrap());
 
 use super::{Value, DELIMITER};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SimpleError {
     pub code: String,
     pub msg: String,
@@ -57,35 +61,18 @@ impl SimpleError {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use nom::error::{Error, ErrorKind};
+impl TryFrom<SimpleError> for Bytes {
+    type Error = anyhow::Error;
 
-    #[test]
-    fn test_basic() {
-        assert_eq!(
-            SimpleError::parse(&b"-ERR reason\r\n"[..]),
-            Ok((&b""[..], SimpleError::new("ERR", "reason")))
-        );
-    }
-
-    #[test]
-    fn test_invalid_characters() {
-        assert_eq!(
-            SimpleError::parse(&b"-ERR some\nreason\r\n"[..]),
-            Err(nom::Err::Error(Error::new(
-                &b"\nreason\r\n"[..],
-                ErrorKind::Tag
-            )))
-        );
-
-        assert_eq!(
-            SimpleError::parse(&b"-ERR some\rreason\r\n"[..]),
-            Err(nom::Err::Error(Error::new(
-                &b"\rreason\r\n"[..],
-                ErrorKind::Tag
-            )))
-        );
+    fn try_from(input: SimpleError) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+        buf.write("-".as_bytes())
+            .and_then(|_| buf.write(input.code.as_bytes()))
+            .and_then(|_| buf.write(" ".as_bytes()))
+            .and_then(|_| buf.write(input.msg.as_bytes()))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .context("Value::SimpleError (buf::write)")?;
+        buf.flush().context("Value::SimpleError (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }

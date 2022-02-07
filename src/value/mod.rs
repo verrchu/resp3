@@ -70,10 +70,11 @@ impl Value {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     use bytes::Bytes;
     use num_bigint::BigInt;
-    use num_traits::Num;
 
     #[test]
     fn test_basic_array() {
@@ -104,7 +105,7 @@ mod tests {
             Value::parse(format!("({raw}\r\n").as_bytes()),
             Ok((
                 &b""[..],
-                Value::BigNumber(BigNumber(BigInt::from_str_radix(&raw, 10).unwrap()))
+                Value::BigNumber(BigNumber(BigInt::from_str(&raw).unwrap()))
             ))
         );
     }
