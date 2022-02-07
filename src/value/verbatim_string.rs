@@ -37,7 +37,7 @@ impl VerbatimString {
 
 impl VerbatimString {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        let mut parse_len = {
+        let parse_len = {
             let parser = delimited(tag("="), digit1, tag(DELIMITER));
 
             map_res(parser, |v: &[u8]| {
@@ -47,17 +47,21 @@ impl VerbatimString {
             })
         };
 
-        let (input, len) = parse_len.parse(input)?;
-        let parse_msg = separated_pair(alt((tag("txt"), tag("mkd"))), tag(":"), take(len - 4));
-        let (input, (ty, msg)) = terminated(parse_msg, tag(DELIMITER)).parse(input)?;
-
-        let value = match ty {
-            b"txt" => VerbatimString::Txt(Bytes::from(msg.to_vec())),
-            b"mkd" => VerbatimString::Mkd(Bytes::from(msg.to_vec())),
-            _ => unreachable!(),
+        let parse_msg = |len: u64| {
+            terminated(
+                separated_pair(alt((tag("txt"), tag("mkd"))), tag(":"), take(len - 4)),
+                tag(DELIMITER),
+            )
         };
 
-        Ok((input, value))
+        parse_len
+            .flat_map(parse_msg)
+            .map(|(ty, msg)| match ty {
+                b"txt" => VerbatimString::Txt(Bytes::from(msg.to_vec())),
+                b"mkd" => VerbatimString::Mkd(Bytes::from(msg.to_vec())),
+                _ => unreachable!(),
+            })
+            .parse(input)
     }
 }
 

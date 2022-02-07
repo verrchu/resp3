@@ -19,7 +19,7 @@ impl From<Array> for Value {
 
 impl Array {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        let mut parse_len = {
+        let parse_len = {
             let parser = delimited(tag("*"), digit1, tag(DELIMITER));
 
             map_res(parser, |v: &[u8]| {
@@ -29,10 +29,8 @@ impl Array {
             })
         };
 
-        // TODO: use flat_map instead
-        let (input, len) = parse_len.parse(input)?;
-
-        many_m_n(len, len, Value::parse).map(Array).parse(input)
+        let parse_val = |len| many_m_n(len, len, Value::parse);
+        parse_len.flat_map(parse_val).map(Array).parse(input)
     }
 }
 
