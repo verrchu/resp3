@@ -23,7 +23,7 @@ impl From<BlobString> for Value {
 
 impl BlobString {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        let mut parse_len = {
+        let parse_len = {
             let parser = delimited(tag("$"), digit1, tag(DELIMITER));
 
             map_res(parser, |v: &[u8]| {
@@ -33,9 +33,10 @@ impl BlobString {
             })
         };
 
-        let (input, len) = parse_len.parse(input)?;
+        let parse_val = |len| terminated(take(len), tag(DELIMITER));
 
-        terminated(take(len), tag(DELIMITER))
+        parse_len
+            .flat_map(parse_val)
             .map(|bytes: &[u8]| BlobString::from(bytes.to_vec()))
             .parse(input)
     }

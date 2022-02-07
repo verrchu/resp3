@@ -30,7 +30,7 @@ impl Array {
         };
 
         let parse_val = |len| many_m_n(len, len, Value::parse);
-        parse_len.flat_map(parse_val).map(Array).parse(input)
+        parse_len.flat_map(parse_val).map(Array::from).parse(input)
     }
 }
 

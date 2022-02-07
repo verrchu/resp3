@@ -26,7 +26,7 @@ impl From<Map> for Value {
 
 impl Map {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
-        let mut parse_len = {
+        let parse_len = {
             let parser = delimited(tag("%"), digit1, tag(DELIMITER));
 
             map_res(parser, |v: &[u8]| {
@@ -36,10 +36,8 @@ impl Map {
             })
         };
 
-        let parse_kv = pair(Value::parse, Value::parse);
-
-        let (input, len) = parse_len.parse(input)?;
-        many_m_n(len, len, parse_kv).map(Map::from).parse(input)
+        let parse_val = |len| many_m_n(len, len, pair(Value::parse, Value::parse));
+        parse_len.flat_map(parse_val).map(Map::from).parse(input)
     }
 }
 

@@ -8,9 +8,8 @@ use nom::{
     bytes::complete::{tag, take},
     character::complete::digit1,
     combinator::map_res,
-    error::{Error, ErrorKind},
     sequence::{delimited, terminated},
-    Err, IResult, Parser,
+    IResult, Parser,
 };
 use nom_regex::bytes::re_find;
 use once_cell::sync::Lazy;
@@ -55,10 +54,10 @@ impl BlobError {
         let (input, msg) = terminated(take(len), tag(DELIMITER)).parse(input)?;
 
         let code = Lazy::force(&CODE).to_owned();
-        let (msg, code) = terminated(re_find(code), tag(" ")).parse(msg)?;
-
-        let code =
-            str::from_utf8(code).map_err(|_| Err::Error(Error::new(msg, ErrorKind::Alpha)))?;
+        let (msg, code) = map_res(terminated(re_find(code), tag(" ")), |code: &[u8]| {
+            str::from_utf8(code).context("Value::BlobError (str::from_utf8)")
+        })
+        .parse(msg)?;
 
         Ok((input, BlobError::new(code, msg.to_vec())))
     }
