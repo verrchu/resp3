@@ -135,8 +135,8 @@ mod tests {
     #[test]
     fn test_basic_double() {
         assert_eq!(
-            Value::parse(&b",-1.234\r\n"[..]),
-            Ok((&b""[..], Value::Double(Double::from(-1.234))))
+            Value::parse(&b",-inf\r\n"[..]),
+            Ok((&b""[..], Value::Double(Double::Inf(double::Sign::Minus))))
         );
     }
 

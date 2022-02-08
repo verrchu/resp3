@@ -59,7 +59,7 @@ mod tests {
                    !10\r\nERR reason\r\n\
                    $4\r\ntest\r\n\
                    #f\r\n\
-                   ,-1.234\r\n\
+                   ,-inf\r\n\
                    _\r\n\
                    :1234\r\n\
                    -ERR reason\r\n\
@@ -76,7 +76,7 @@ mod tests {
                     Value::BlobError(BlobError::new("ERR", b"reason".to_vec())),
                     Value::BlobString(BlobString::from(b"test".to_vec())),
                     Value::Boolean(Boolean(false)),
-                    Value::Double(Double::from(-1.234)),
+                    Value::Double(Double::Inf(double::Sign::Minus)),
                     Value::Null,
                     Value::Number(Number(1234)),
                     Value::SimpleError(SimpleError::new("ERR", "reason")),

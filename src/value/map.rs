@@ -68,7 +68,7 @@ mod tests {
                    !10\r\nERR reason\r\n_\r\n\
                    $4\r\ntest\r\n_\r\n\
                    #f\r\n_\r\n\
-                   ,-1.234\r\n_\r\n\
+                   ,-inf\r\n_\r\n\
                    _\r\n_\r\n\
                    :1234\r\n_\r\n\
                    -ERR reason\r\n_\r\n\
@@ -94,7 +94,7 @@ mod tests {
                         Value::Null
                     ),
                     (Value::Boolean(Boolean(false)), Value::Null),
-                    (Value::Double(Double::from(-1.234)), Value::Null),
+                    (Value::Double(Double::Inf(double::Sign::Minus)), Value::Null),
                     (Value::Null, Value::Null),
                     (Value::Number(Number(1234)), Value::Null),
                     (
@@ -119,7 +119,7 @@ mod tests {
                    :1\r\n!10\r\nERR reason\r\n\
                    :2\r\n$4\r\ntest\r\n\
                    :3\r\n#f\r\n\
-                   :4\r\n,-1.234\r\n\
+                   :4\r\n,-inf\r\n\
                    :5\r\n_\r\n\
                    :6\r\n:1234\r\n\
                    :7\r\n-ERR reason\r\n\
@@ -150,7 +150,7 @@ mod tests {
                     ),
                     (
                         Value::Number(Number::from(4)),
-                        Value::Double(Double::from(-1.234))
+                        Value::Double(Double::Inf(double::Sign::Minus))
                     ),
                     (Value::Number(Number::from(5)), Value::Null),
                     (Value::Number(Number::from(6)), Value::Number(Number(1234))),
