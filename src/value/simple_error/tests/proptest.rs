@@ -5,8 +5,8 @@ use super::SimpleError;
 
 prop_compose! {
     fn value()(
-        code in "[A-Z]{1,8}",
-        msg in "[^\r\n]{1,10}"
+        code in "[A-Z]+",
+        msg in "[^\r\n]+"
     ) -> SimpleError {
         SimpleError::new(code, msg)
     }

@@ -4,7 +4,7 @@ use proptest::prelude::*;
 use super::SimpleString;
 
 fn value() -> impl Strategy<Value = SimpleString> {
-    "[^\r\n]{1,10}".prop_map(SimpleString::from)
+    "[^\r\n]+".prop_map(SimpleString::from)
 }
 
 proptest! {
