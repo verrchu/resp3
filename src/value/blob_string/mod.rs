@@ -1,4 +1,10 @@
-use std::str::{self, FromStr};
+#[cfg(test)]
+mod tests;
+
+use std::{
+    io::Write,
+    str::{self, FromStr},
+};
 
 use super::{Value, DELIMITER};
 
@@ -12,7 +18,7 @@ use nom::{
     IResult, Parser,
 };
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BlobString(pub Bytes);
 
 impl From<BlobString> for Value {
@@ -48,15 +54,18 @@ impl<B: Into<Bytes>> From<B> for BlobString {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl TryFrom<BlobString> for Bytes {
+    type Error = anyhow::Error;
 
-    #[test]
-    fn test_basic() {
-        assert_eq!(
-            BlobString::parse(&b"$11\r\nhello world\r\n"[..]),
-            Ok((&b""[..], BlobString(Bytes::from(b"hello world".to_vec()))))
-        );
+    fn try_from(input: BlobString) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+        buf.write("$".as_bytes())
+            .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .and_then(|_| buf.write(&input.0))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .context("Value::BlobString (buf::write)")?;
+        buf.flush().context("Value::BlobString (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }

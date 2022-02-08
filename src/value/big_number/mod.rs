@@ -64,7 +64,7 @@ impl TryFrom<BigNumber> for Bytes {
             .and_then(|_| buf.write(input.0.to_string().as_bytes()))
             .and_then(|_| buf.write("\r\n".as_bytes()))
             .context("Value::BigNumber (buf::write)")?;
-        buf.flush().context("Value::Boolean (buf::flush)")?;
+        buf.flush().context("Value::BigNumber (buf::flush)")?;
         Ok(Bytes::from(buf))
     }
 }

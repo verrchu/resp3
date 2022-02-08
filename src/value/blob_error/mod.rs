@@ -1,4 +1,10 @@
-use std::str::{self, FromStr};
+#[cfg(test)]
+mod tests;
+
+use std::{
+    io::Write,
+    str::{self, FromStr},
+};
 
 use super::{Value, DELIMITER};
 
@@ -17,7 +23,7 @@ use regex::bytes::Regex;
 
 static CODE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[A-Z]+").unwrap());
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BlobError {
     pub code: String,
     pub msg: Bytes,
@@ -63,15 +69,23 @@ impl BlobError {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl TryFrom<BlobError> for Bytes {
+    type Error = anyhow::Error;
 
-    #[test]
-    fn test_basic() {
-        assert_eq!(
-            BlobError::parse(&b"!10\r\nERR reason\r\n"[..]),
-            Ok((&b""[..], BlobError::new("ERR", b"reason".to_vec())))
-        );
+    fn try_from(input: BlobError) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+        buf.write("!".as_bytes())
+            .and_then(|_| {
+                let len = input.code.as_bytes().len() + input.msg.len() + 1;
+                buf.write(len.to_string().as_bytes())
+            })
+            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(input.code.to_string().as_bytes()))
+            .and_then(|_| buf.write(b" "))
+            .and_then(|_| buf.write(&input.msg))
+            .and_then(|_| buf.write(b"\r\n"))
+            .context("Value::BlobError (buf::write)")?;
+        buf.flush().context("Value::BlobError (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }
