@@ -52,7 +52,7 @@ mod tests {
     use std::str::FromStr;
 
     use super::*;
-    use crate::value::*;
+    use crate::value::{complete::primitive::double, *};
     use num_bigint::BigInt;
 
     #[test]

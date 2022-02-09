@@ -1,30 +1,10 @@
-mod array;
-mod big_number;
-mod blob_error;
-mod blob_string;
-mod boolean;
-mod double;
-mod map;
-mod null;
-mod number;
-mod set;
-mod simple_error;
-mod simple_string;
-mod verbatim_string;
+mod complete;
 
-pub use array::Array;
-pub use big_number::BigNumber;
-pub use blob_error::BlobError;
-pub use blob_string::BlobString;
-pub use boolean::Boolean;
-pub use double::Double;
-pub use map::Map;
-pub use null::Null;
-pub use number::Number;
-pub use set::Set;
-pub use simple_error::SimpleError;
-pub use simple_string::SimpleString;
-pub use verbatim_string::VerbatimString;
+pub use complete::{
+    primitive::{BigNumber, Boolean, Double, Null, Number},
+    recursive::{Array, Map, Set},
+    textual::{BlobError, BlobString, SimpleError, SimpleString, VerbatimString},
+};
 
 use nom::{branch::alt, IResult, Parser};
 
@@ -72,7 +52,7 @@ impl Value {
 mod tests {
     use std::str::FromStr;
 
-    use super::*;
+    use super::{complete::primitive::double, *};
     use bytes::Bytes;
     use num_bigint::BigInt;
 
