@@ -1,5 +1,5 @@
-pub mod attribute;
 pub mod array;
+pub mod attribute;
 pub mod map;
 pub mod set;
 

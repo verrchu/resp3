@@ -81,7 +81,10 @@ fn test_basic_number() {
 
 #[test]
 fn test_basic_null() {
-    assert_eq!(Value::parse(&b"_\r\n"[..]), Ok((&b""[..], Value::Null)));
+    assert_eq!(
+        Value::parse(&b"_\r\n"[..]),
+        Ok((&b""[..], Value::from(Null::default())))
+    );
 }
 
 #[test]

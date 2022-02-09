@@ -5,7 +5,7 @@ mod complete;
 
 pub use complete::{
     primitive::{BigNumber, Boolean, Double, Null, Number},
-    recursive::{Array, Map, Set},
+    recursive::{Array, Attribute, Map, Set},
     textual::{BlobError, BlobString, SimpleError, SimpleString, VerbatimString},
 };
 
@@ -23,7 +23,7 @@ pub enum Value {
     Boolean(Boolean),
     Double(Double),
     Map(Map),
-    Null,
+    Null(Null),
     Number(Number),
     Set(Set),
     SimpleError(SimpleError),
@@ -64,7 +64,7 @@ impl TryFrom<Value> for Bytes {
             Value::Boolean(inner) => Bytes::try_from(inner),
             Value::Double(inner) => Bytes::try_from(inner),
             Value::Map(inner) => Bytes::try_from(inner),
-            Value::Null => Bytes::try_from(Null),
+            Value::Null(inner) => Bytes::try_from(inner),
             Value::Number(inner) => Bytes::try_from(inner),
             Value::Set(inner) => Bytes::try_from(inner),
             Value::SimpleError(inner) => Bytes::try_from(inner),

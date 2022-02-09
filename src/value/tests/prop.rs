@@ -4,7 +4,7 @@ use super::*;
 
 pub fn value() -> impl Strategy<Value = Value> {
     let strat = prop_oneof![
-        Just(Value::Null),
+        complete::primitive::null::tests::prop::value().prop_map(Value::from),
         complete::primitive::big_number::tests::prop::value().prop_map(Value::from),
         complete::primitive::boolean::tests::prop::value().prop_map(Value::from),
         complete::primitive::number::tests::prop::value().prop_map(Value::from),

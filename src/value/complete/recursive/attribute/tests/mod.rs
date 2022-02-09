@@ -37,28 +37,34 @@ fn test_heterogenous_keys_simple() {
             Attribute::from([
                 (
                     Value::BigNumber(BigNumber(BigInt::from_str("12345").unwrap())),
-                    Value::Null
+                    Value::from(Null::default())
                 ),
                 (
                     Value::BlobError(BlobError::new("ERR", b"reason".to_vec())),
-                    Value::Null
+                    Value::from(Null::default())
                 ),
                 (
                     Value::BlobString(BlobString::from(b"test".to_vec())),
-                    Value::Null
+                    Value::from(Null::default())
                 ),
-                (Value::Boolean(Boolean(false)), Value::Null),
-                (Value::Double(Double::Inf(double::Sign::Minus)), Value::Null),
-                (Value::Null, Value::Null),
-                (Value::Number(Number(1234)), Value::Null),
+                (Value::Boolean(Boolean(false)), Value::from(Null::default())),
+                (
+                    Value::Double(Double::Inf(double::Sign::Minus)),
+                    Value::from(Null::default())
+                ),
+                (Value::from(Null::default()), Value::from(Null::default())),
+                (Value::Number(Number(1234)), Value::from(Null::default())),
                 (
                     Value::SimpleError(SimpleError::new("ERR", "reason")),
-                    Value::Null
+                    Value::from(Null::default())
                 ),
-                (Value::SimpleString(SimpleString::from("test")), Value::Null),
+                (
+                    Value::SimpleString(SimpleString::from("test")),
+                    Value::from(Null::default())
+                ),
                 (
                     Value::VerbatimString(VerbatimString::txt(b"test".to_vec())),
-                    Value::Null
+                    Value::from(Null::default())
                 ),
             ])
         ))

@@ -35,7 +35,7 @@ fn test_heterogenous_simple() {
                 Value::BlobString(BlobString::from(b"test".to_vec())),
                 Value::Boolean(Boolean(false)),
                 Value::Double(Double::Inf(double::Sign::Minus)),
-                Value::Null,
+                Value::from(Null::default()),
                 Value::Number(Number(1234)),
                 Value::SimpleError(SimpleError::new("ERR", "reason")),
                 Value::SimpleString(SimpleString::from("test")),
