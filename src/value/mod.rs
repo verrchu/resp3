@@ -6,6 +6,7 @@ pub use complete::{
     textual::{BlobError, BlobString, SimpleError, SimpleString, VerbatimString},
 };
 
+use bytes::Bytes;
 use nom::{branch::alt, IResult, Parser};
 
 static DELIMITER: &str = "\r\n";
@@ -45,6 +46,28 @@ impl Value {
             VerbatimString::parse.map(Value::from),
         ))
         .parse(input)
+    }
+}
+
+impl TryFrom<Value> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Value) -> anyhow::Result<Bytes> {
+        match input {
+            Value::Array(inner) => Bytes::try_from(inner),
+            Value::BigNumber(inner) => Bytes::try_from(inner),
+            Value::BlobError(inner) => Bytes::try_from(inner),
+            Value::BlobString(inner) => Bytes::try_from(inner),
+            Value::Boolean(inner) => Bytes::try_from(inner),
+            Value::Double(inner) => Bytes::try_from(inner),
+            Value::Map(inner) => Bytes::try_from(inner),
+            Value::Null => Bytes::try_from(Null),
+            Value::Number(inner) => Bytes::try_from(inner),
+            Value::Set(inner) => Bytes::try_from(inner),
+            Value::SimpleError(inner) => Bytes::try_from(inner),
+            Value::SimpleString(inner) => Bytes::try_from(inner),
+            Value::VerbatimString(inner) => Bytes::try_from(inner),
+        }
     }
 }
 

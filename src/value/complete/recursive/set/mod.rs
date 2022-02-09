@@ -1,9 +1,11 @@
 use std::{
     collections::BTreeSet,
+    io::Write,
     str::{self, FromStr},
 };
 
 use anyhow::Context;
+use bytes::Bytes;
 use nom::{
     bytes::complete::tag, character::complete::digit1, combinator::map_res, multi::many_m_n,
     sequence::delimited, IResult, Parser,
@@ -40,6 +42,27 @@ impl Set {
 impl<I: IntoIterator<Item = Value>> From<I> for Set {
     fn from(input: I) -> Self {
         Self(input.into_iter().collect())
+    }
+}
+
+impl TryFrom<Set> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Set) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+
+        buf.write(b"~")
+            .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
+            .and_then(|_| buf.write(b"\r\n"))
+            .context("Value::Set (buf::write)")?;
+
+        for value in input.0.into_iter() {
+            let bytes = Bytes::try_from(value).context("Value::Set (Bytes::try_from)")?;
+            buf.write(&bytes).context("Value::Set (buf::write)")?;
+        }
+
+        buf.flush().context("Value::Set (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }
 

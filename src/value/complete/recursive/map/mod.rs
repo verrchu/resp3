@@ -1,9 +1,11 @@
 use std::{
     collections::BTreeMap,
+    io::Write,
     str::{self, FromStr},
 };
 
 use anyhow::Context;
+use bytes::Bytes;
 use nom::{
     bytes::complete::tag,
     character::complete::digit1,
@@ -44,6 +46,30 @@ impl Map {
 impl<I: IntoIterator<Item = (Value, Value)>> From<I> for Map {
     fn from(input: I) -> Self {
         Self(input.into_iter().collect())
+    }
+}
+
+impl TryFrom<Map> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Map) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+
+        buf.write(b"~")
+            .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
+            .and_then(|_| buf.write(b"\r\n"))
+            .context("Value::Map (buf::write)")?;
+
+        for (k, v) in input.0.into_iter() {
+            let bytes = Bytes::try_from(k).context("Value::Map (Bytes::try_from)")?;
+            buf.write(&bytes).context("Value::Map (buf::write)")?;
+
+            let bytes = Bytes::try_from(v).context("Value::Map (Bytes::try_from)")?;
+            buf.write(&bytes).context("Value::Map (buf::write)")?;
+        }
+
+        buf.flush().context("Value::Map (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }
 

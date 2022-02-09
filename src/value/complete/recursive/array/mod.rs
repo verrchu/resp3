@@ -1,6 +1,10 @@
-use std::str::{self, FromStr};
+use std::{
+    io::Write,
+    str::{self, FromStr},
+};
 
 use anyhow::Context;
+use bytes::Bytes;
 use nom::{
     bytes::complete::tag, character::complete::digit1, combinator::map_res, multi::many_m_n,
     sequence::delimited, IResult, Parser,
@@ -37,6 +41,27 @@ impl Array {
 impl<I: IntoIterator<Item = Value>> From<I> for Array {
     fn from(input: I) -> Self {
         Self(input.into_iter().collect())
+    }
+}
+
+impl TryFrom<Array> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Array) -> anyhow::Result<Bytes> {
+        let mut buf = vec![];
+
+        buf.write("*".as_bytes())
+            .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
+            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .context("Value::Array (buf::write)")?;
+
+        for value in input.0.into_iter() {
+            let bytes = Bytes::try_from(value).context("Value::Array (Bytes::try_from)")?;
+            buf.write(&bytes).context("Value::Array (buf::write)")?;
+        }
+
+        buf.flush().context("Value::Array (buf::flush)")?;
+        Ok(Bytes::from(buf))
     }
 }
 
