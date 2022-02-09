@@ -58,7 +58,7 @@ impl TryFrom<Map> for Bytes {
     fn try_from(input: Map) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
 
-        buf.write(b"~")
+        buf.write(b"%")
             .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
             .and_then(|_| buf.write(b"\r\n"))
             .context("Value::Map (buf::write)")?;
