@@ -3,7 +3,7 @@ use proptest::prelude::*;
 
 use super::SimpleString;
 
-fn value() -> impl Strategy<Value = SimpleString> {
+pub fn value() -> impl Strategy<Value = SimpleString> {
     "[^\r\n]+".prop_map(SimpleString::from)
 }
 

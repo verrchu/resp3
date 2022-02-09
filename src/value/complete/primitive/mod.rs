@@ -1,8 +1,8 @@
-mod big_number;
-mod boolean;
+pub mod big_number;
+pub mod boolean;
 pub mod double;
-mod null;
-mod number;
+pub mod null;
+pub mod number;
 
 use super::*;
 

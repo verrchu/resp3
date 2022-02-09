@@ -4,7 +4,7 @@ use proptest::prelude::*;
 use super::SimpleError;
 
 prop_compose! {
-    fn value()(
+    pub fn value()(
         code in "[A-Z]+",
         msg in "[^\r\n]+"
     ) -> SimpleError {

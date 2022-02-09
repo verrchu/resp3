@@ -3,7 +3,7 @@ use proptest::prelude::*;
 
 use super::VerbatimString;
 
-fn value() -> impl Strategy<Value = VerbatimString> {
+pub fn value() -> impl Strategy<Value = VerbatimString> {
     prop_oneof![
         any::<Vec<u8>>().prop_map(VerbatimString::txt),
         any::<Vec<u8>>().prop_map(VerbatimString::mkd),

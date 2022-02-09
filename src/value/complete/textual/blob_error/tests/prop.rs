@@ -4,7 +4,7 @@ use proptest::prelude::*;
 use super::BlobError;
 
 prop_compose! {
-    fn value()(
+    pub fn value()(
         code in "[A-Z]+",
         msg in any::<Vec<u8>>()
     ) -> BlobError {

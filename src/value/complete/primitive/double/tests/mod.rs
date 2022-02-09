@@ -1,4 +1,4 @@
-mod prop;
+pub mod prop;
 
 use super::*;
 

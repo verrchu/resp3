@@ -1,6 +1,6 @@
-mod array;
-mod map;
-mod set;
+pub mod array;
+pub mod map;
+pub mod set;
 
 use super::*;
 

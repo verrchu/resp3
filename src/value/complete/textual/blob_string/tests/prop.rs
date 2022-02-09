@@ -3,7 +3,7 @@ use proptest::prelude::*;
 
 use super::BlobString;
 
-fn value() -> impl Strategy<Value = BlobString> {
+pub fn value() -> impl Strategy<Value = BlobString> {
     any::<Vec<u8>>().prop_map(BlobString::from)
 }
 

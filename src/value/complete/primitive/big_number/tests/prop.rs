@@ -6,7 +6,7 @@ use proptest::prelude::*;
 
 use super::BigNumber;
 
-fn value() -> impl Strategy<Value = BigNumber> {
+pub fn value() -> impl Strategy<Value = BigNumber> {
     "-?[1-9][0-9]*".prop_map(|n| BigNumber::from(BigInt::from_str(&n).unwrap()))
 }
 

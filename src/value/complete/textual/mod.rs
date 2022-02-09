@@ -1,8 +1,8 @@
-mod blob_error;
-mod blob_string;
-mod simple_error;
-mod simple_string;
-mod verbatim_string;
+pub mod blob_error;
+pub mod blob_string;
+pub mod simple_error;
+pub mod simple_string;
+pub mod verbatim_string;
 
 use super::*;
 
