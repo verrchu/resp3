@@ -104,7 +104,7 @@ impl TryFrom<&SimpleError> for Bytes {
             .and_then(|_| buf.write(input.code.as_bytes()))
             .and_then(|_| buf.write(b" "))
             .and_then(|_| buf.write(input.msg.as_bytes()))
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::SimpleError (buf::write)")?;
 
         buf.flush().context("Value::SimpleError (buf::flush)")?;

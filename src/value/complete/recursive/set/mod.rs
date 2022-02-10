@@ -56,7 +56,7 @@ impl TryFrom<&Set> for Bytes {
 
         buf.write(b"~")
             .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::Set (buf::write)")?;
 
         for value in input.0.iter() {

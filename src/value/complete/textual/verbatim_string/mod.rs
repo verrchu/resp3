@@ -142,11 +142,11 @@ impl TryFrom<&VerbatimString> for Bytes {
 
         buf.write(b"=")
             .and_then(|_| buf.write((input.len() + 4).to_string().as_bytes()))
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .and_then(|_| buf.write(input.tag().as_bytes()))
             .and_then(|_| buf.write(b":"))
             .and_then(|_| buf.write(input.val()))
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::VerbatimString (buf::write)")?;
 
         buf.flush().context("Value::VerbatimString (buf::flush)")?;

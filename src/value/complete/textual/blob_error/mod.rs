@@ -111,11 +111,11 @@ impl TryFrom<&BlobError> for Bytes {
                 let len = input.code.as_bytes().len() + input.msg.len() + 1;
                 buf.write(len.to_string().as_bytes())
             })
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .and_then(|_| buf.write(input.code.to_string().as_bytes()))
             .and_then(|_| buf.write(b" "))
             .and_then(|_| buf.write(&input.msg))
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::BlobError (buf::write)")?;
 
         buf.flush().context("Value::BlobError (buf::flush)")?;

@@ -87,7 +87,7 @@ impl TryFrom<&SimpleString> for Bytes {
 
         buf.write(b"+")
             .and_then(|_| buf.write(input.val().as_bytes()))
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::SimpleString (buf::write)")?;
 
         buf.flush().context("Value::SimpleString (buf::flush)")?;

@@ -93,9 +93,9 @@ impl TryFrom<&BlobString> for Bytes {
 
         buf.write(b"$")
             .and_then(|_| buf.write(input.val().len().to_string().as_bytes()))
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .and_then(|_| buf.write(input.val()))
-            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::BlobString (buf::write)")?;
 
         buf.flush().context("Value::BlobString (buf::flush)")?;

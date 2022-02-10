@@ -208,8 +208,7 @@ impl TryFrom<&Double> for Bytes {
             }
         }
 
-        buf.write("\r\n".as_bytes())
-            .context("Value::Double (buf::write)")?;
+        buf.write(DELIMITER).context("Value::Double (buf::write)")?;
 
         buf.flush().context("Value::Double (buf::flush)")?;
         Ok(Bytes::from(buf))
@@ -229,6 +228,7 @@ impl TryFrom<&Parts> for Bytes {
 
     fn try_from(input: &Parts) -> anyhow::Result<Self> {
         let mut buf = vec![];
+
         input
             .sign
             .is_minus()
@@ -245,6 +245,7 @@ impl TryFrom<&Parts> for Bytes {
                     .transpose()
             })
             .context("Value::Double (buf::write)")?;
+
         buf.flush().context("Value::Double (buf::flush)")?;
         Ok(Bytes::from(buf))
     }

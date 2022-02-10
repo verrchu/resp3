@@ -52,8 +52,8 @@ impl TryFrom<&Null> for Bytes {
             buf.write(&bytes).context("Value::Null (buf::write)")?;
         }
 
-        buf.write("_".as_bytes())
-            .and_then(|_| buf.write("\r\n".as_bytes()))
+        buf.write(b"_")
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::Null (buf::write)")?;
 
         buf.flush().context("Value::Null (buf::flush)")?;

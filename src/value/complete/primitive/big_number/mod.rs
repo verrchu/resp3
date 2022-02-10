@@ -90,9 +90,9 @@ impl TryFrom<&BigNumber> for Bytes {
             buf.write(&bytes).context("Value::BigNumber (buf::write)")?;
         }
 
-        buf.write("(".as_bytes())
+        buf.write(b"(")
             .and_then(|_| buf.write(input.val.to_string().as_bytes()))
-            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::BigNumber (buf::write)")?;
 
         buf.flush().context("Value::BigNumber (buf::flush)")?;

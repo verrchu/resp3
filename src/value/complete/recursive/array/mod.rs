@@ -53,9 +53,9 @@ impl TryFrom<&Array> for Bytes {
     fn try_from(input: &Array) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
 
-        buf.write("*".as_bytes())
+        buf.write(b"*")
             .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
-            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::Array (buf::write)")?;
 
         for value in input.0.iter() {

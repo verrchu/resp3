@@ -12,7 +12,7 @@ pub use complete::{
 use bytes::Bytes;
 use nom::{branch::alt, IResult, Parser};
 
-static DELIMITER: &str = "\r\n";
+static DELIMITER: &[u8] = b"\r\n";
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Value {

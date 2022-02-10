@@ -83,16 +83,12 @@ impl TryFrom<&Boolean> for Bytes {
             buf.write(&bytes).context("Value::Boolean (buf::write)")?;
         }
 
-        buf.write("#".as_bytes())
-            .and_then(|_| {
-                let bool_str = match input.val() {
-                    true => "t",
-                    false => "f",
-                };
-
-                buf.write(bool_str.as_bytes())
+        buf.write(b"#")
+            .and_then(|_| match input.val() {
+                true => buf.write(b"t"),
+                false => buf.write(b"f"),
             })
-            .and_then(|_| buf.write("\r\n".as_bytes()))
+            .and_then(|_| buf.write(DELIMITER))
             .context("Value::Boolean (buf::write)")?;
         buf.flush().context("Value::Boolean (buf::flush)")?;
         Ok(Bytes::from(buf))
