@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 246b1a3c9035f02b1526f262047dbabf52473a01fde1d7cdedb2d49714f070e7 # shrinks to v = BlobString { val: b"", attr: Some(Attribute({})) }

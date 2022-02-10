@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc dc312718b2f2f1f3efc7ddea0acca0fb9f7c948b9237798dae8dae2211d68a27 # shrinks to v = BlobError { code: "A", msg: b"", attr: Some(Attribute({})) }

@@ -6,7 +6,7 @@ use std::{
     str::{self, FromStr},
 };
 
-use super::{Value, DELIMITER};
+use super::{Attribute, Value, DELIMITER};
 
 use anyhow::Context;
 use bytes::Bytes;
@@ -14,16 +14,35 @@ use nom::{
     bytes::complete::{tag, take},
     character::complete::digit1,
     combinator::map_res,
-    sequence::{delimited, terminated},
+    combinator::opt,
+    sequence::{delimited, pair, terminated},
     IResult, Parser,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BlobString(pub Bytes);
+pub struct BlobString {
+    val: Bytes,
+    attr: Option<Attribute>,
+}
 
 impl From<BlobString> for Value {
     fn from(input: BlobString) -> Value {
         Value::BlobString(input)
+    }
+}
+
+impl BlobString {
+    pub fn val(&self) -> &Bytes {
+        &self.val
+    }
+
+    pub fn attr(&self) -> Option<&Attribute> {
+        self.attr.as_ref()
+    }
+
+    pub fn with_attr(mut self, attr: Attribute) -> Self {
+        self.attr = Some(attr);
+        self
     }
 }
 
@@ -39,18 +58,24 @@ impl BlobString {
             })
         };
 
+        let parse_attr = opt(Attribute::parse);
         let parse_val = |len| terminated(take(len), tag(DELIMITER));
 
-        parse_len
-            .flat_map(parse_val)
-            .map(|bytes: &[u8]| BlobString::from(bytes.to_vec()))
+        pair(parse_attr, parse_len.flat_map(parse_val))
+            .map(|(attr, val)| BlobString {
+                val: Bytes::from(val.to_vec()),
+                attr,
+            })
             .parse(input)
     }
 }
 
 impl<B: Into<Bytes>> From<B> for BlobString {
     fn from(input: B) -> Self {
-        Self(input.into())
+        Self {
+            val: input.into(),
+            attr: None,
+        }
     }
 }
 
@@ -59,12 +84,20 @@ impl TryFrom<&BlobString> for Bytes {
 
     fn try_from(input: &BlobString) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
-        buf.write("$".as_bytes())
-            .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
-            .and_then(|_| buf.write("\r\n".as_bytes()))
-            .and_then(|_| buf.write(&input.0))
-            .and_then(|_| buf.write("\r\n".as_bytes()))
+
+        if let Some(attr) = input.attr.as_ref() {
+            let bytes = Bytes::try_from(attr).context("Value::BlobString (Bytes::from)")?;
+            buf.write(&bytes)
+                .context("Value::BlobString (buf::write)")?;
+        }
+
+        buf.write(b"$")
+            .and_then(|_| buf.write(input.val().len().to_string().as_bytes()))
+            .and_then(|_| buf.write(b"\r\n"))
+            .and_then(|_| buf.write(input.val()))
+            .and_then(|_| buf.write(b"\r\n"))
             .context("Value::BlobString (buf::write)")?;
+
         buf.flush().context("Value::BlobString (buf::flush)")?;
         Ok(Bytes::from(buf))
     }

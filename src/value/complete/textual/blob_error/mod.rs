@@ -6,7 +6,7 @@ use std::{
     str::{self, FromStr},
 };
 
-use super::{Value, DELIMITER};
+use super::{Attribute, Value, DELIMITER};
 
 use anyhow::Context;
 use bytes::Bytes;
@@ -14,6 +14,7 @@ use nom::{
     bytes::complete::{tag, take},
     character::complete::digit1,
     combinator::map_res,
+    combinator::opt,
     sequence::{delimited, terminated},
     IResult, Parser,
 };
@@ -27,6 +28,7 @@ static CODE: Lazy<Regex> = Lazy::new(|| Regex::new(r"[A-Z]+").unwrap());
 pub struct BlobError {
     pub code: String,
     pub msg: Bytes,
+    pub attr: Option<Attribute>,
 }
 
 impl From<BlobError> for Value {
@@ -36,11 +38,29 @@ impl From<BlobError> for Value {
 }
 
 impl BlobError {
-    pub(crate) fn new(code: impl Into<String>, msg: impl Into<Bytes>) -> Self {
+    pub fn new(code: impl Into<String>, msg: impl Into<Bytes>) -> Self {
         Self {
             code: code.into(),
             msg: msg.into(),
+            attr: None,
         }
+    }
+
+    pub fn with_attr(mut self, attr: Attribute) -> Self {
+        self.attr = Some(attr);
+        self
+    }
+
+    pub fn code(&self) -> &str {
+        &self.code
+    }
+
+    pub fn msg(&self) -> &Bytes {
+        &self.msg
+    }
+
+    pub fn attr(&self) -> Option<&Attribute> {
+        self.attr.as_ref()
     }
 }
 
@@ -56,6 +76,7 @@ impl BlobError {
             })
         };
 
+        let (input, attr) = opt(Attribute::parse).parse(input)?;
         let (input, len) = parse_len.parse(input)?;
         let (input, msg) = terminated(take(len), tag(DELIMITER)).parse(input)?;
 
@@ -65,7 +86,12 @@ impl BlobError {
         })
         .parse(msg)?;
 
-        Ok((input, BlobError::new(code, msg.to_vec())))
+        let mut value = BlobError::new(code, msg.to_vec());
+        if let Some(attr) = attr {
+            value = value.with_attr(attr);
+        }
+
+        Ok((input, value))
     }
 }
 
@@ -74,6 +100,12 @@ impl TryFrom<&BlobError> for Bytes {
 
     fn try_from(input: &BlobError) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
+
+        if let Some(attr) = input.attr.as_ref() {
+            let bytes = Bytes::try_from(attr).context("Value::BlobError (Bytes::from)")?;
+            buf.write(&bytes).context("Value::BlobError (buf::write)")?;
+        }
+
         buf.write("!".as_bytes())
             .and_then(|_| {
                 let len = input.code.as_bytes().len() + input.msg.len() + 1;
@@ -85,6 +117,7 @@ impl TryFrom<&BlobError> for Bytes {
             .and_then(|_| buf.write(&input.msg))
             .and_then(|_| buf.write(b"\r\n"))
             .context("Value::BlobError (buf::write)")?;
+
         buf.flush().context("Value::BlobError (buf::flush)")?;
         Ok(Bytes::from(buf))
     }

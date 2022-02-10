@@ -58,7 +58,7 @@ fn test_basic_blob_string() {
         Value::parse(&b"$4\r\ntest\r\n"[..]),
         Ok((
             &b""[..],
-            Value::BlobString(BlobString(Bytes::from(b"test".to_vec())))
+            Value::BlobString(BlobString::from(b"test".to_vec()))
         ))
     );
 }
@@ -112,7 +112,7 @@ fn test_basic_verbatim_string() {
         Value::parse(&b"=10\r\ntxt:123456\r\n"[..]),
         Ok((
             &b""[..],
-            Value::VerbatimString(VerbatimString::Txt(Bytes::from(b"123456".to_vec())))
+            Value::from(VerbatimString::txt(b"123456".to_vec()))
         ))
     );
 }

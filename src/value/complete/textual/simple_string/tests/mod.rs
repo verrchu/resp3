@@ -7,7 +7,7 @@ use nom::error::{Error, ErrorKind};
 fn test_basic() {
     assert_eq!(
         SimpleString::parse(&b"+hello world\r\n"[..]),
-        Ok((&b""[..], SimpleString(String::from("hello world"))))
+        Ok((&b""[..], SimpleString::from("hello world")))
     );
 }
 
