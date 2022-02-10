@@ -52,10 +52,10 @@ impl Value {
     }
 }
 
-impl TryFrom<Value> for Bytes {
+impl TryFrom<&Value> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: Value) -> anyhow::Result<Bytes> {
+    fn try_from(input: &Value) -> anyhow::Result<Bytes> {
         match input {
             Value::Array(inner) => Bytes::try_from(inner),
             Value::BigNumber(inner) => Bytes::try_from(inner),
@@ -71,5 +71,13 @@ impl TryFrom<Value> for Bytes {
             Value::SimpleString(inner) => Bytes::try_from(inner),
             Value::VerbatimString(inner) => Bytes::try_from(inner),
         }
+    }
+}
+
+impl TryFrom<Value> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Value) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

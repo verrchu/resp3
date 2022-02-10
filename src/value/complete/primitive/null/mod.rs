@@ -34,13 +34,13 @@ impl Null {
     }
 }
 
-impl TryFrom<Null> for Bytes {
+impl TryFrom<&Null> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: Null) -> anyhow::Result<Bytes> {
+    fn try_from(input: &Null) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
 
-        if let Some(attr) = input.attr {
+        if let Some(attr) = input.attr.as_ref() {
             let bytes = Bytes::try_from(attr).context("Value::Null (Bytes::from)")?;
             buf.write(&bytes).context("Value::Null (buf::write)")?;
         }
@@ -51,5 +51,13 @@ impl TryFrom<Null> for Bytes {
 
         buf.flush().context("Value::Null (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<Null> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Null) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

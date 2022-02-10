@@ -33,34 +33,37 @@ fn test_heterogenous_keys_simple() {
             &b""[..],
             Map::from([
                 (
-                    Value::BigNumber(BigNumber(BigInt::from_str("12345").unwrap())),
+                    Value::from(BigNumber(BigInt::from_str("12345").unwrap())),
                     Value::from(Null::default())
                 ),
                 (
-                    Value::BlobError(BlobError::new("ERR", b"reason".to_vec())),
+                    Value::from(BlobError::new("ERR", b"reason".to_vec())),
                     Value::from(Null::default())
                 ),
                 (
-                    Value::BlobString(BlobString::from(b"test".to_vec())),
+                    Value::from(BlobString::from(b"test".to_vec())),
                     Value::from(Null::default())
                 ),
-                (Value::Boolean(Boolean(false)), Value::from(Null::default())),
                 (
-                    Value::Double(Double::Inf(double::Sign::Minus)),
+                    Value::from(Boolean::from(false)),
+                    Value::from(Null::default())
+                ),
+                (
+                    Value::from(Double::Inf(double::Sign::Minus)),
                     Value::from(Null::default())
                 ),
                 (Value::from(Null::default()), Value::from(Null::default())),
-                (Value::Number(Number(1234)), Value::from(Null::default())),
+                (Value::from(Number(1234)), Value::from(Null::default())),
                 (
-                    Value::SimpleError(SimpleError::new("ERR", "reason")),
+                    Value::from(SimpleError::new("ERR", "reason")),
                     Value::from(Null::default())
                 ),
                 (
-                    Value::SimpleString(SimpleString::from("test")),
+                    Value::from(SimpleString::from("test")),
                     Value::from(Null::default())
                 ),
                 (
-                    Value::VerbatimString(VerbatimString::txt(b"test".to_vec())),
+                    Value::from(VerbatimString::txt(b"test".to_vec())),
                     Value::from(Null::default())
                 ),
             ])
@@ -90,38 +93,38 @@ fn test_heterogenous_value_simple() {
             &b""[..],
             Map::from([
                 (
-                    Value::Number(Number::from(0)),
-                    Value::BigNumber(BigNumber(BigInt::from_str("12345").unwrap()))
+                    Value::from(Number::from(0)),
+                    Value::from(BigNumber(BigInt::from_str("12345").unwrap()))
                 ),
                 (
-                    Value::Number(Number::from(1)),
-                    Value::BlobError(BlobError::new("ERR", b"reason".to_vec()))
+                    Value::from(Number::from(1)),
+                    Value::from(BlobError::new("ERR", b"reason".to_vec()))
                 ),
                 (
-                    Value::Number(Number::from(2)),
-                    Value::BlobString(BlobString::from(b"test".to_vec()))
+                    Value::from(Number::from(2)),
+                    Value::from(BlobString::from(b"test".to_vec()))
                 ),
                 (
-                    Value::Number(Number::from(3)),
-                    Value::Boolean(Boolean(false))
+                    Value::from(Number::from(3)),
+                    Value::from(Boolean::from(false))
                 ),
                 (
-                    Value::Number(Number::from(4)),
-                    Value::Double(Double::Inf(double::Sign::Minus))
+                    Value::from(Number::from(4)),
+                    Value::from(Double::Inf(double::Sign::Minus))
                 ),
-                (Value::Number(Number::from(5)), Value::from(Null::default())),
-                (Value::Number(Number::from(6)), Value::Number(Number(1234))),
+                (Value::from(Number::from(5)), Value::from(Null::default())),
+                (Value::from(Number::from(6)), Value::from(Number(1234))),
                 (
-                    Value::Number(Number::from(7)),
-                    Value::SimpleError(SimpleError::new("ERR", "reason"))
-                ),
-                (
-                    Value::Number(Number::from(8)),
-                    Value::SimpleString(SimpleString::from("test"))
+                    Value::from(Number::from(7)),
+                    Value::from(SimpleError::new("ERR", "reason"))
                 ),
                 (
-                    Value::Number(Number::from(9)),
-                    Value::VerbatimString(VerbatimString::txt(b"test".to_vec()))
+                    Value::from(Number::from(8)),
+                    Value::from(SimpleString::from("test"))
+                ),
+                (
+                    Value::from(Number::from(9)),
+                    Value::from(VerbatimString::txt(b"test".to_vec()))
                 ),
             ])
         ))
@@ -144,12 +147,12 @@ fn test_nested_map_key() {
             Map::from([(
                 Value::Map(Map::from([
                     (
-                        Value::Number(Number::from(1)),
-                        Value::Boolean(Boolean::from(false))
+                        Value::from(Number::from(1)),
+                        Value::from(Boolean::from(false))
                     ),
                     (
-                        Value::Number(Number::from(2)),
-                        Value::Boolean(Boolean::from(true))
+                        Value::from(Number::from(2)),
+                        Value::from(Boolean::from(true))
                     ),
                 ])),
                 Value::from(Null::default())
@@ -176,12 +179,12 @@ fn test_nested_map_value() {
                 Value::from(Null::default()),
                 Value::Map(Map::from([
                     (
-                        Value::Number(Number::from(1)),
-                        Value::Boolean(Boolean::from(false))
+                        Value::from(Number::from(1)),
+                        Value::from(Boolean::from(false))
                     ),
                     (
-                        Value::Number(Number::from(2)),
-                        Value::Boolean(Boolean::from(true))
+                        Value::from(Number::from(2)),
+                        Value::from(Boolean::from(true))
                     ),
                 ]))
             )])

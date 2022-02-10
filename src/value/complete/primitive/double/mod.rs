@@ -127,10 +127,10 @@ impl Double {
     }
 }
 
-impl TryFrom<Double> for Bytes {
+impl TryFrom<&Double> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: Double) -> anyhow::Result<Bytes> {
+    fn try_from(input: &Double) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
 
         buf.write(b",").context("Value::Double (buf::write)")?;
@@ -145,7 +145,7 @@ impl TryFrom<Double> for Bytes {
             }
             Double::Val(val) => {
                 let bytes =
-                    Bytes::try_from(val.parts).context("Value::Double (Bytes::Try_from)")?;
+                    Bytes::try_from(&val.parts).context("Value::Double (Bytes::Try_from)")?;
                 buf.write(&bytes).context("Value::Double (buf::write)")?;
             }
         }
@@ -158,10 +158,18 @@ impl TryFrom<Double> for Bytes {
     }
 }
 
-impl TryFrom<Parts> for Bytes {
+impl TryFrom<Double> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: Parts) -> anyhow::Result<Self> {
+    fn try_from(input: Double) -> anyhow::Result<Self> {
+        Bytes::try_from(&input)
+    }
+}
+
+impl TryFrom<&Parts> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: &Parts) -> anyhow::Result<Self> {
         let mut buf = vec![];
         input
             .sign
@@ -181,5 +189,13 @@ impl TryFrom<Parts> for Bytes {
             .context("Value::Double (buf::write)")?;
         buf.flush().context("Value::Double (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<Parts> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Parts) -> anyhow::Result<Self> {
+        Bytes::try_from(&input)
     }
 }

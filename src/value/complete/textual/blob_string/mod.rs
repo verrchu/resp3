@@ -54,10 +54,10 @@ impl<B: Into<Bytes>> From<B> for BlobString {
     }
 }
 
-impl TryFrom<BlobString> for Bytes {
+impl TryFrom<&BlobString> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: BlobString) -> anyhow::Result<Bytes> {
+    fn try_from(input: &BlobString) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
         buf.write("$".as_bytes())
             .and_then(|_| buf.write(input.0.len().to_string().as_bytes()))
@@ -67,5 +67,13 @@ impl TryFrom<BlobString> for Bytes {
             .context("Value::BlobString (buf::write)")?;
         buf.flush().context("Value::BlobString (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<BlobString> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: BlobString) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

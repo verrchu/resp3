@@ -55,10 +55,10 @@ impl From<BigInt> for BigNumber {
     }
 }
 
-impl TryFrom<BigNumber> for Bytes {
+impl TryFrom<&BigNumber> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: BigNumber) -> anyhow::Result<Bytes> {
+    fn try_from(input: &BigNumber) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
         buf.write("(".as_bytes())
             .and_then(|_| buf.write(input.0.to_string().as_bytes()))
@@ -66,5 +66,13 @@ impl TryFrom<BigNumber> for Bytes {
             .context("Value::BigNumber (buf::write)")?;
         buf.flush().context("Value::BigNumber (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<BigNumber> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: BigNumber) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

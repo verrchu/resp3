@@ -24,7 +24,7 @@ fn test_basic_array() {
 fn test_basic_boolean() {
     assert_eq!(
         Value::parse(&b"#f\r\n"[..]),
-        Ok((&b""[..], Value::Boolean(Boolean(false))))
+        Ok((&b""[..], Value::from(Boolean::from(false))))
     );
 }
 

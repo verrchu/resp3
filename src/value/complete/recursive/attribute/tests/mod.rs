@@ -36,34 +36,37 @@ fn test_heterogenous_keys_simple() {
             &b""[..],
             Attribute::from([
                 (
-                    Value::BigNumber(BigNumber(BigInt::from_str("12345").unwrap())),
+                    Value::from(BigNumber(BigInt::from_str("12345").unwrap())),
                     Value::from(Null::default())
                 ),
                 (
-                    Value::BlobError(BlobError::new("ERR", b"reason".to_vec())),
+                    Value::from(BlobError::new("ERR", b"reason".to_vec())),
                     Value::from(Null::default())
                 ),
                 (
-                    Value::BlobString(BlobString::from(b"test".to_vec())),
+                    Value::from(BlobString::from(b"test".to_vec())),
                     Value::from(Null::default())
                 ),
-                (Value::Boolean(Boolean(false)), Value::from(Null::default())),
                 (
-                    Value::Double(Double::Inf(double::Sign::Minus)),
+                    Value::from(Boolean::from(false)),
+                    Value::from(Null::default())
+                ),
+                (
+                    Value::from(Double::Inf(double::Sign::Minus)),
                     Value::from(Null::default())
                 ),
                 (Value::from(Null::default()), Value::from(Null::default())),
-                (Value::Number(Number(1234)), Value::from(Null::default())),
+                (Value::from(Number(1234)), Value::from(Null::default())),
                 (
-                    Value::SimpleError(SimpleError::new("ERR", "reason")),
+                    Value::from(SimpleError::new("ERR", "reason")),
                     Value::from(Null::default())
                 ),
                 (
-                    Value::SimpleString(SimpleString::from("test")),
+                    Value::from(SimpleString::from("test")),
                     Value::from(Null::default())
                 ),
                 (
-                    Value::VerbatimString(VerbatimString::txt(b"test".to_vec())),
+                    Value::from(VerbatimString::txt(b"test".to_vec())),
                     Value::from(Null::default())
                 ),
             ])

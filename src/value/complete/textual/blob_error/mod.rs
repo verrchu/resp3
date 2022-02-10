@@ -69,10 +69,10 @@ impl BlobError {
     }
 }
 
-impl TryFrom<BlobError> for Bytes {
+impl TryFrom<&BlobError> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: BlobError) -> anyhow::Result<Bytes> {
+    fn try_from(input: &BlobError) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
         buf.write("!".as_bytes())
             .and_then(|_| {
@@ -87,5 +87,13 @@ impl TryFrom<BlobError> for Bytes {
             .context("Value::BlobError (buf::write)")?;
         buf.flush().context("Value::BlobError (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<BlobError> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: BlobError) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

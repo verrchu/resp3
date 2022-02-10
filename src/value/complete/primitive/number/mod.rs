@@ -57,10 +57,10 @@ impl From<i64> for Number {
     }
 }
 
-impl TryFrom<Number> for Bytes {
+impl TryFrom<&Number> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: Number) -> anyhow::Result<Bytes> {
+    fn try_from(input: &Number) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
         buf.write(":".as_bytes())
             .and_then(|_| buf.write(input.0.to_string().as_bytes()))
@@ -68,5 +68,13 @@ impl TryFrom<Number> for Bytes {
             .context("Value::Number (buf::write)")?;
         buf.flush().context("Value::Number (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<Number> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Number) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

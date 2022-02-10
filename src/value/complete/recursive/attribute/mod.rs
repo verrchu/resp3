@@ -49,10 +49,10 @@ impl<I: IntoIterator<Item = (Value, Value)>> From<I> for Attribute {
     }
 }
 
-impl TryFrom<Attribute> for Bytes {
+impl TryFrom<&Attribute> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: Attribute) -> anyhow::Result<Bytes> {
+    fn try_from(input: &Attribute) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
 
         buf.write(b"|")
@@ -60,7 +60,7 @@ impl TryFrom<Attribute> for Bytes {
             .and_then(|_| buf.write(b"\r\n"))
             .context("Value::Attribute (buf::write)")?;
 
-        for (k, v) in input.0.into_iter() {
+        for (k, v) in input.0.iter() {
             let bytes = Bytes::try_from(k).context("Value::Attribute (Bytes::try_from)")?;
             buf.write(&bytes).context("Value::Attribute (buf::write)")?;
 
@@ -70,5 +70,13 @@ impl TryFrom<Attribute> for Bytes {
 
         buf.flush().context("Value::Attribute (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<Attribute> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Attribute) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

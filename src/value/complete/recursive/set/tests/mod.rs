@@ -32,16 +32,16 @@ fn test_heterogenous_simple() {
         Ok((
             &b""[..],
             Set::from([
-                Value::BigNumber(BigNumber(BigInt::from_str("12345").unwrap())),
-                Value::BlobError(BlobError::new("ERR", b"reason".to_vec())),
-                Value::BlobString(BlobString::from(b"test".to_vec())),
-                Value::Boolean(Boolean(false)),
-                Value::Double(Double::Inf(double::Sign::Minus)),
+                Value::from(BigNumber(BigInt::from_str("12345").unwrap())),
+                Value::from(BlobError::new("ERR", b"reason".to_vec())),
+                Value::from(BlobString::from(b"test".to_vec())),
+                Value::from(Boolean::from(false)),
+                Value::from(Double::Inf(double::Sign::Minus)),
                 Value::from(Null::default()),
-                Value::Number(Number(1234)),
-                Value::SimpleError(SimpleError::new("ERR", "reason")),
-                Value::SimpleString(SimpleString::from("test")),
-                Value::VerbatimString(VerbatimString::txt(b"test".to_vec())),
+                Value::from(Number(1234)),
+                Value::from(SimpleError::new("ERR", "reason")),
+                Value::from(SimpleString::from("test")),
+                Value::from(VerbatimString::txt(b"test".to_vec())),
             ])
         ))
     );
@@ -62,8 +62,8 @@ fn test_nested_array() {
             Set::from([
                 Value::Set(Set::from([Value::SimpleString(SimpleString::from("test"))])),
                 Value::Set(Set::from([
-                    Value::Boolean(Boolean(false)),
-                    Value::Number(Number(-1))
+                    Value::from(Boolean::from(false)),
+                    Value::from(Number(-1))
                 ])),
             ])
         ))

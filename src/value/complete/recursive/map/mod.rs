@@ -52,10 +52,10 @@ impl<I: IntoIterator<Item = (Value, Value)>> From<I> for Map {
     }
 }
 
-impl TryFrom<Map> for Bytes {
+impl TryFrom<&Map> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: Map) -> anyhow::Result<Bytes> {
+    fn try_from(input: &Map) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
 
         buf.write(b"%")
@@ -63,7 +63,7 @@ impl TryFrom<Map> for Bytes {
             .and_then(|_| buf.write(b"\r\n"))
             .context("Value::Map (buf::write)")?;
 
-        for (k, v) in input.0.into_iter() {
+        for (k, v) in input.0.iter() {
             let bytes = Bytes::try_from(k).context("Value::Map (Bytes::try_from)")?;
             buf.write(&bytes).context("Value::Map (buf::write)")?;
 
@@ -73,5 +73,13 @@ impl TryFrom<Map> for Bytes {
 
         buf.flush().context("Value::Map (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<Map> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: Map) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

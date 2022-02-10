@@ -2,14 +2,24 @@ use bytes::Bytes;
 use proptest::prelude::*;
 
 use super::Boolean;
+use crate::value::complete::recursive::attribute::tests::prop::value as attr_value;
 
 pub fn value() -> impl Strategy<Value = Boolean> {
     any::<bool>().prop_map(Boolean::from)
 }
 
+prop_compose! {
+    pub fn value_with_attr()(
+        val in any::<bool>(),
+        attr in prop::option::of(attr_value())
+    ) -> Boolean {
+        Boolean { val, attr }
+    }
+}
+
 proptest! {
     #[test]
-    fn test_basic(v in value()) {
+    fn test_basic(v in value_with_attr()) {
         let bytes = Bytes::try_from(v.clone()).unwrap();
         let (rest, parsed) = Boolean::parse(&bytes).unwrap();
 

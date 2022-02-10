@@ -92,10 +92,10 @@ impl VerbatimString {
     }
 }
 
-impl TryFrom<VerbatimString> for Bytes {
+impl TryFrom<&VerbatimString> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: VerbatimString) -> anyhow::Result<Bytes> {
+    fn try_from(input: &VerbatimString) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
         buf.write("=".as_bytes())
             .and_then(|_| buf.write((input.len() + 4).to_string().as_bytes()))
@@ -107,5 +107,13 @@ impl TryFrom<VerbatimString> for Bytes {
             .context("Value::VerbatimString (buf::write)")?;
         buf.flush().context("Value::VerbatimString (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<VerbatimString> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: VerbatimString) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

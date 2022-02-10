@@ -61,10 +61,10 @@ impl SimpleError {
     }
 }
 
-impl TryFrom<SimpleError> for Bytes {
+impl TryFrom<&SimpleError> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: SimpleError) -> anyhow::Result<Bytes> {
+    fn try_from(input: &SimpleError) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
         buf.write("-".as_bytes())
             .and_then(|_| buf.write(input.code.as_bytes()))
@@ -74,5 +74,13 @@ impl TryFrom<SimpleError> for Bytes {
             .context("Value::SimpleError (buf::write)")?;
         buf.flush().context("Value::SimpleError (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<SimpleError> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: SimpleError) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }

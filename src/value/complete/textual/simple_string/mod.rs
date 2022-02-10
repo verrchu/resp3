@@ -42,10 +42,10 @@ impl<S: Into<String>> From<S> for SimpleString {
     }
 }
 
-impl TryFrom<SimpleString> for Bytes {
+impl TryFrom<&SimpleString> for Bytes {
     type Error = anyhow::Error;
 
-    fn try_from(input: SimpleString) -> anyhow::Result<Bytes> {
+    fn try_from(input: &SimpleString) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
         buf.write("+".as_bytes())
             .and_then(|_| buf.write(input.0.as_bytes()))
@@ -53,5 +53,13 @@ impl TryFrom<SimpleString> for Bytes {
             .context("Value::SimpleString (buf::write)")?;
         buf.flush().context("Value::SimpleString (buf::flush)")?;
         Ok(Bytes::from(buf))
+    }
+}
+
+impl TryFrom<SimpleString> for Bytes {
+    type Error = anyhow::Error;
+
+    fn try_from(input: SimpleString) -> anyhow::Result<Bytes> {
+        Bytes::try_from(&input)
     }
 }
