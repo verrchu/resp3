@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc c44ecd6f42ee1c292262eef7d8b3b8988a227cb7f2d71d2123b965f528efc4fb # shrinks to v = BigNumber { val: 1, attr: Some(Attribute({})) }

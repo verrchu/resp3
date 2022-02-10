@@ -8,8 +8,13 @@ pub fn value() -> impl Strategy<Value = Null> {
     Just(Null::default())
 }
 
-pub fn value_with_attr() -> impl Strategy<Value = Null> {
-    prop::option::of(attr_value()).prop_map(|attr| Null { attr })
+prop_compose! {
+    pub fn value_with_attr()(
+        val in value(),
+        attr in prop::option::of(attr_value())
+    ) -> Null {
+        attr.map(|attr| val.clone().with_attr(attr)).unwrap_or(val)
+    }
 }
 
 proptest! {

@@ -33,7 +33,7 @@ fn test_heterogenous_keys_simple() {
             &b""[..],
             Map::from([
                 (
-                    Value::from(BigNumber(BigInt::from_str("12345").unwrap())),
+                    Value::from(BigNumber::from(BigInt::from_str("12345").unwrap())),
                     Value::from(Null::default())
                 ),
                 (
@@ -94,7 +94,7 @@ fn test_heterogenous_value_simple() {
             Map::from([
                 (
                     Value::from(Number::from(0)),
-                    Value::from(BigNumber(BigInt::from_str("12345").unwrap()))
+                    Value::from(BigNumber::from(BigInt::from_str("12345").unwrap()))
                 ),
                 (
                     Value::from(Number::from(1)),

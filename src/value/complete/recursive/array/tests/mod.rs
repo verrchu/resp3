@@ -30,7 +30,7 @@ fn test_heterogenous_simple() {
         Ok((
             &b""[..],
             Array(vec![
-                Value::from(BigNumber(BigInt::from_str("12345").unwrap())),
+                Value::from(BigNumber::from(BigInt::from_str("12345").unwrap())),
                 Value::from(BlobError::new("ERR", b"reason".to_vec())),
                 Value::from(BlobString::from(b"test".to_vec())),
                 Value::from(Boolean::from(false)),

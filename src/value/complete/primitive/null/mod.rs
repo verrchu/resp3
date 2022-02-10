@@ -26,6 +26,13 @@ impl From<Null> for Value {
 }
 
 impl Null {
+    pub fn with_attr(mut self, attr: Attribute) -> Self {
+        self.attr = Some(attr);
+        self
+    }
+}
+
+impl Null {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         let parse_val = terminated(tag("_"), tag(DELIMITER));
         pair(opt(Attribute::parse), parse_val)

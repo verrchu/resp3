@@ -10,10 +10,10 @@ pub fn value() -> impl Strategy<Value = Boolean> {
 
 prop_compose! {
     pub fn value_with_attr()(
-        val in any::<bool>(),
+        val in value(),
         attr in prop::option::of(attr_value())
     ) -> Boolean {
-        Boolean { val, attr }
+        attr.map(|attr| val.clone().with_attr(attr)).unwrap_or(val)
     }
 }
 

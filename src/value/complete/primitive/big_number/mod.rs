@@ -17,10 +17,13 @@ use nom::{
 };
 use num_bigint::BigInt;
 
-use super::{Value, DELIMITER};
+use super::{Attribute, Value, DELIMITER};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BigNumber(pub BigInt);
+pub struct BigNumber {
+    val: BigInt,
+    attr: Option<Attribute>,
+}
 
 impl From<BigNumber> for Value {
     fn from(input: BigNumber) -> Value {
@@ -29,7 +32,23 @@ impl From<BigNumber> for Value {
 }
 
 impl BigNumber {
+    pub fn val(&self) -> &BigInt {
+        &self.val
+    }
+
+    pub fn attr(&self) -> Option<&Attribute> {
+        self.attr.as_ref()
+    }
+
+    pub fn with_attr(mut self, attr: Attribute) -> Self {
+        self.attr = Some(attr);
+        self
+    }
+}
+
+impl BigNumber {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        let parse_attr = opt(Attribute::parse);
         let parse_val = {
             let parser = delimited(tag("("), pair(opt(tag("-")), digit1), tag(DELIMITER));
 
@@ -45,13 +64,18 @@ impl BigNumber {
             })
         };
 
-        parse_val.map(BigNumber::from).parse(input)
+        pair(parse_attr, parse_val)
+            .map(|(attr, val)| BigNumber { val, attr })
+            .parse(input)
     }
 }
 
 impl From<BigInt> for BigNumber {
     fn from(input: BigInt) -> Self {
-        Self(input)
+        Self {
+            val: input,
+            attr: None,
+        }
     }
 }
 
@@ -60,10 +84,17 @@ impl TryFrom<&BigNumber> for Bytes {
 
     fn try_from(input: &BigNumber) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
+
+        if let Some(attr) = input.attr.as_ref() {
+            let bytes = Bytes::try_from(attr).context("Value::BigNumber (Bytes::from)")?;
+            buf.write(&bytes).context("Value::BigNumber (buf::write)")?;
+        }
+
         buf.write("(".as_bytes())
-            .and_then(|_| buf.write(input.0.to_string().as_bytes()))
+            .and_then(|_| buf.write(input.val.to_string().as_bytes()))
             .and_then(|_| buf.write("\r\n".as_bytes()))
             .context("Value::BigNumber (buf::write)")?;
+
         buf.flush().context("Value::BigNumber (buf::flush)")?;
         Ok(Bytes::from(buf))
     }

@@ -36,7 +36,7 @@ fn test_basic_big_number() {
         Value::parse(format!("({raw}\r\n").as_bytes()),
         Ok((
             &b""[..],
-            Value::BigNumber(BigNumber(BigInt::from_str(&raw).unwrap()))
+            Value::BigNumber(BigNumber::from(BigInt::from_str(&raw).unwrap()))
         ))
     );
 }

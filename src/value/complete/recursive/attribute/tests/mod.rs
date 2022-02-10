@@ -36,7 +36,7 @@ fn test_heterogenous_keys_simple() {
             &b""[..],
             Attribute::from([
                 (
-                    Value::from(BigNumber(BigInt::from_str("12345").unwrap())),
+                    Value::from(BigNumber::from(BigInt::from_str("12345").unwrap())),
                     Value::from(Null::default())
                 ),
                 (
