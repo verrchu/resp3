@@ -18,7 +18,7 @@ use nom::{
     IResult, Parser,
 };
 
-use super::{Value, DELIMITER};
+use super::{Attribute, Value, DELIMITER};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Sign {
@@ -58,8 +58,8 @@ pub struct Val {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Double {
-    Inf(Sign),
-    Val(Val),
+    Inf { sign: Sign, attr: Option<Attribute> },
+    Val { val: Val, attr: Option<Attribute> },
 }
 
 impl From<Double> for Value {
@@ -69,13 +69,47 @@ impl From<Double> for Value {
 }
 
 impl From<Val> for Double {
-    fn from(input: Val) -> Self {
-        Self::Val(input)
+    fn from(val: Val) -> Self {
+        Self::Val { val, attr: None }
     }
 }
 
 impl Double {
-    fn from_parts(parts: Parts) -> anyhow::Result<Self> {
+    pub fn val(&self) -> f64 {
+        match self {
+            Self::Inf {
+                sign: Sign::Minus, ..
+            } => f64::NEG_INFINITY,
+            Self::Inf {
+                sign: Sign::Plus, ..
+            } => f64::INFINITY,
+            Self::Val { val, .. } => val.inner,
+        }
+    }
+
+    pub fn attr(&self) -> Option<&Attribute> {
+        match self {
+            Self::Inf { attr, .. } => attr.as_ref(),
+            Self::Val { attr, .. } => attr.as_ref(),
+        }
+    }
+
+    pub fn with_attr(self, attr: Attribute) -> Self {
+        match self {
+            Self::Inf { sign, .. } => Self::Inf {
+                sign,
+                attr: Some(attr),
+            },
+            Self::Val { val, .. } => Self::Val {
+                val,
+                attr: Some(attr),
+            },
+        }
+    }
+}
+
+impl Double {
+    pub fn from_parts(parts: Parts) -> anyhow::Result<Self> {
         let inner = Bytes::try_from(parts.clone())
             .context("(Value::Double) Bytes::try_from")
             .and_then(|v| {
@@ -84,15 +118,28 @@ impl Double {
                     .and_then(|v| f64::from_str(v).context("Value::Double (f64::from_str)"))
             })?;
 
-        Ok(Self::Val(Val { parts, inner }))
+        Ok(Self::Val {
+            val: Val { parts, inner },
+            attr: None,
+        })
+    }
+
+    pub fn inf(sign: Sign) -> Self {
+        Self::Inf { sign, attr: None }
     }
 }
 
 impl Double {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
         let parse_inf = pair(opt(tag("-")), tag("inf")).map(|(sign, _inf)| {
-            sign.map(|_| Double::Inf(Sign::Minus))
-                .unwrap_or(Double::Inf(Sign::Plus))
+            sign.map(|_| Double::Inf {
+                sign: Sign::Minus,
+                attr: None,
+            })
+            .unwrap_or(Double::Inf {
+                sign: Sign::Plus,
+                attr: None,
+            })
         });
 
         let parse_num = {
@@ -121,8 +168,14 @@ impl Double {
             })
         };
 
-        delimited(tag(","), alt((parse_num, parse_inf)), tag(DELIMITER))
-            .map(Double::from)
+        let parse_attr = opt(Attribute::parse);
+        let parse_val = delimited(tag(","), alt((parse_num, parse_inf)), tag(DELIMITER));
+
+        pair(parse_attr, parse_val)
+            .map(|(attr, val)| match attr {
+                Some(attr) => val.with_attr(attr),
+                None => val,
+            })
             .parse(input)
     }
 }
@@ -133,17 +186,22 @@ impl TryFrom<&Double> for Bytes {
     fn try_from(input: &Double) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
 
+        if let Some(attr) = input.attr() {
+            let bytes = Bytes::try_from(attr).context("Value::Double (Bytes::from)")?;
+            buf.write(&bytes).context("Value::Double (buf::write)")?;
+        }
+
         buf.write(b",").context("Value::Double (buf::write)")?;
 
         match input {
-            Double::Inf(sign) => {
+            Double::Inf { sign, .. } => {
                 sign.is_minus()
                     .then(|| buf.write(b"-"))
                     .transpose()
                     .and_then(|_| buf.write(b"inf"))
                     .context("Value::Double (buf::write)")?;
             }
-            Double::Val(val) => {
+            Double::Val { val, .. } => {
                 let bytes =
                     Bytes::try_from(&val.parts).context("Value::Double (Bytes::Try_from)")?;
                 buf.write(&bytes).context("Value::Double (buf::write)")?;

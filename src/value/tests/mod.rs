@@ -67,7 +67,7 @@ fn test_basic_blob_string() {
 fn test_basic_double() {
     assert_eq!(
         Value::parse(&b",-inf\r\n"[..]),
-        Ok((&b""[..], Value::Double(Double::Inf(double::Sign::Minus))))
+        Ok((&b""[..], Value::from(Double::inf(double::Sign::Minus))))
     );
 }
 

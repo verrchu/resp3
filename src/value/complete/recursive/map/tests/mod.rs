@@ -49,11 +49,14 @@ fn test_heterogenous_keys_simple() {
                     Value::from(Null::default())
                 ),
                 (
-                    Value::from(Double::Inf(double::Sign::Minus)),
+                    Value::from(Double::inf(double::Sign::Minus)),
                     Value::from(Null::default())
                 ),
                 (Value::from(Null::default()), Value::from(Null::default())),
-                (Value::from(Number::from(1234)), Value::from(Null::default())),
+                (
+                    Value::from(Number::from(1234)),
+                    Value::from(Null::default())
+                ),
                 (
                     Value::from(SimpleError::new("ERR", "reason")),
                     Value::from(Null::default())
@@ -110,7 +113,7 @@ fn test_heterogenous_value_simple() {
                 ),
                 (
                     Value::from(Number::from(4)),
-                    Value::from(Double::Inf(double::Sign::Minus))
+                    Value::from(Double::inf(double::Sign::Minus))
                 ),
                 (Value::from(Number::from(5)), Value::from(Null::default())),
                 (

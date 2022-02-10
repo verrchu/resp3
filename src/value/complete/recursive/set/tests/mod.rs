@@ -36,7 +36,7 @@ fn test_heterogenous_simple() {
                 Value::from(BlobError::new("ERR", b"reason".to_vec())),
                 Value::from(BlobString::from(b"test".to_vec())),
                 Value::from(Boolean::from(false)),
-                Value::from(Double::Inf(double::Sign::Minus)),
+                Value::from(Double::inf(double::Sign::Minus)),
                 Value::from(Null::default()),
                 Value::from(Number::from(1234)),
                 Value::from(SimpleError::new("ERR", "reason")),

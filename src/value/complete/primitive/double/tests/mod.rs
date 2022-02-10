@@ -38,7 +38,7 @@ fn test_negative_number() {
 fn test_positive_infinity() {
     assert_eq!(
         Double::parse(&b",inf\r\n"[..]),
-        Ok((&b""[..], Double::Inf(Sign::Plus)))
+        Ok((&b""[..], Double::inf(Sign::Plus)))
     );
 }
 
@@ -46,6 +46,6 @@ fn test_positive_infinity() {
 fn test_negative_infinity() {
     assert_eq!(
         Double::parse(&b",-inf\r\n"[..]),
-        Ok((&b""[..], Double::Inf(Sign::Minus)))
+        Ok((&b""[..], Double::inf(Sign::Minus)))
     );
 }

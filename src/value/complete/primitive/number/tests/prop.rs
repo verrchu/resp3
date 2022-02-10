@@ -19,7 +19,7 @@ prop_compose! {
 
 proptest! {
     #[test]
-    fn test_basic(v in value()) {
+    fn test_basic(v in value_with_attr()) {
         let bytes = Bytes::try_from(v.clone()).unwrap();
         let (rest, parsed) = Number::parse(&bytes).unwrap();
 
