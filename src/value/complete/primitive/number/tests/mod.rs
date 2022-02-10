@@ -6,7 +6,7 @@ use super::*;
 fn test_positive_number() {
     assert_eq!(
         Number::parse(&b":1234\r\n"[..]),
-        Ok((&b""[..], Number(1234)))
+        Ok((&b""[..], Number::from(1234)))
     );
 }
 
@@ -14,6 +14,6 @@ fn test_positive_number() {
 fn test_negative_number() {
     assert_eq!(
         Number::parse(&b":-1234\r\n"[..]),
-        Ok((&b""[..], Number(-1234)))
+        Ok((&b""[..], Number::from(-1234)))
     );
 }

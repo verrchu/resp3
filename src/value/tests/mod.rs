@@ -36,7 +36,7 @@ fn test_basic_big_number() {
         Value::parse(format!("({raw}\r\n").as_bytes()),
         Ok((
             &b""[..],
-            Value::BigNumber(BigNumber::from(BigInt::from_str(&raw).unwrap()))
+            Value::from(BigNumber::from(BigInt::from_str(&raw).unwrap()))
         ))
     );
 }
@@ -75,7 +75,7 @@ fn test_basic_double() {
 fn test_basic_number() {
     assert_eq!(
         Value::parse(&b":0\r\n"[..]),
-        Ok((&b""[..], Value::Number(Number(0))))
+        Ok((&b""[..], Value::from(Number::from(0))))
     );
 }
 

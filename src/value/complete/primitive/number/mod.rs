@@ -16,10 +16,13 @@ use nom::{
     IResult, Parser,
 };
 
-use super::{Value, DELIMITER};
+use super::{Attribute, Value, DELIMITER};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Number(pub i64);
+pub struct Number {
+    val: i64,
+    attr: Option<Attribute>,
+}
 
 impl From<Number> for Value {
     fn from(input: Number) -> Value {
@@ -28,9 +31,25 @@ impl From<Number> for Value {
 }
 
 impl Number {
+    pub fn val(&self) -> i64 {
+        self.val
+    }
+
+    pub fn attr(&self) -> Option<&Attribute> {
+        self.attr.as_ref()
+    }
+
+    pub fn with_attr(mut self, attr: Attribute) -> Self {
+        self.attr = Some(attr);
+        self
+    }
+}
+
+impl Number {
     pub fn parse(input: &[u8]) -> IResult<&[u8], Self> {
+        let parse_attr = opt(Attribute::parse);
         let parse_val = {
-            let parser = pair(opt(tag("-")), digit1);
+            let parser = delimited(tag(":"), pair(opt(tag("-")), digit1), tag(DELIMITER));
             let wrapper = map_res(parser, |(sign, number)| {
                 let number = str::from_utf8(number).context("Value::Number (str::from_utf8)")?;
                 let number = sign
@@ -45,15 +64,15 @@ impl Number {
             })
         };
 
-        delimited(tag(":"), parse_val, tag(DELIMITER))
-            .map(Number::from)
+        pair(parse_attr, parse_val)
+            .map(|(attr, val)| Number { attr, val })
             .parse(input)
     }
 }
 
 impl From<i64> for Number {
-    fn from(input: i64) -> Self {
-        Self(input)
+    fn from(val: i64) -> Self {
+        Self { val, attr: None }
     }
 }
 
@@ -62,10 +81,17 @@ impl TryFrom<&Number> for Bytes {
 
     fn try_from(input: &Number) -> anyhow::Result<Bytes> {
         let mut buf = vec![];
+
+        if let Some(attr) = input.attr.as_ref() {
+            let bytes = Bytes::try_from(attr).context("Value::Number (Bytes::from)")?;
+            buf.write(&bytes).context("Value::Number (buf::write)")?;
+        }
+
         buf.write(":".as_bytes())
-            .and_then(|_| buf.write(input.0.to_string().as_bytes()))
+            .and_then(|_| buf.write(input.val().to_string().as_bytes()))
             .and_then(|_| buf.write("\r\n".as_bytes()))
             .context("Value::Number (buf::write)")?;
+
         buf.flush().context("Value::Number (buf::flush)")?;
         Ok(Bytes::from(buf))
     }

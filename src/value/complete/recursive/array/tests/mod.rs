@@ -36,7 +36,7 @@ fn test_heterogenous_simple() {
                 Value::from(Boolean::from(false)),
                 Value::from(Double::Inf(double::Sign::Minus)),
                 Value::from(Null::default()),
-                Value::from(Number(1234)),
+                Value::from(Number::from(1234)),
                 Value::from(SimpleError::new("ERR", "reason")),
                 Value::from(SimpleString::from("test")),
                 Value::from(VerbatimString::txt(b"test".to_vec())),
@@ -63,7 +63,7 @@ fn test_nested_array() {
                 ))])),
                 Value::Array(Array::from([
                     Value::from(Boolean::from(false)),
-                    Value::from(Number(-1))
+                    Value::from(Number::from(-1))
                 ])),
             ])
         ))

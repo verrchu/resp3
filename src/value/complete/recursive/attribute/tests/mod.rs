@@ -56,7 +56,7 @@ fn test_heterogenous_keys_simple() {
                     Value::from(Null::default())
                 ),
                 (Value::from(Null::default()), Value::from(Null::default())),
-                (Value::from(Number(1234)), Value::from(Null::default())),
+                (Value::from(Number::from(1234)), Value::from(Null::default())),
                 (
                     Value::from(SimpleError::new("ERR", "reason")),
                     Value::from(Null::default())
