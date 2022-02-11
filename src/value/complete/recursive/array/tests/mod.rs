@@ -6,7 +6,10 @@ use num_bigint::BigInt;
 
 #[test]
 fn test_empty() {
-    assert_eq!(Array::parse(&b"*0\r\n"[..]), Ok((&b""[..], Array(vec![]))));
+    assert_eq!(
+        Array::parse(&b"*0\r\n"[..]),
+        Ok((&b""[..], Array::from([])))
+    );
 }
 
 #[test]
@@ -29,7 +32,7 @@ fn test_heterogenous_simple() {
         Array::parse(raw.as_bytes()),
         Ok((
             &b""[..],
-            Array(vec![
+            Array::from([
                 Value::from(BigNumber::from(BigInt::from_str("12345").unwrap())),
                 Value::from(BlobError::new("ERR", b"reason".to_vec())),
                 Value::from(BlobString::from(b"test".to_vec())),
