@@ -5,7 +5,8 @@ mod complete;
 
 pub use complete::{
     primitive::{BigNumber, Boolean, Double, Null, Number},
-    recursive::{Array, Attribute, Map, Set},
+    recursive::{Array, Map, Set},
+    special::Attribute,
     textual::{BlobError, BlobString, SimpleError, SimpleString, VerbatimString},
 };
 

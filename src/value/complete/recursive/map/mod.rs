@@ -33,6 +33,7 @@ impl From<Map> for Value {
 }
 
 impl Map {
+    #[allow(clippy::mutable_key_type)] // FIXME
     pub fn val(&self) -> &BTreeMap<Value, Value> {
         &self.val
     }

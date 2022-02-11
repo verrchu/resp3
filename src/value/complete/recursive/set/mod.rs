@@ -34,6 +34,7 @@ impl From<Set> for Value {
 }
 
 impl Set {
+    #[allow(clippy::mutable_key_type)] // FIXME
     pub fn val(&self) -> &BTreeSet<Value> {
         &self.val
     }

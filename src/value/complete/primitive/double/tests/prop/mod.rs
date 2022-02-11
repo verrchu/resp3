@@ -1,7 +1,7 @@
 use proptest::prelude::{prop as p, *};
 
 use super::*;
-use crate::value::complete::recursive::attribute::tests::prop::value as attr_value;
+use crate::value::complete::special::attribute::tests::prop::value as attr_value;
 
 mod parts;
 mod sign;

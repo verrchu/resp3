@@ -2,7 +2,7 @@ use bytes::Bytes;
 use proptest::prelude::*;
 
 use super::BlobString;
-use crate::value::complete::recursive::attribute::tests::prop::value as attr_value;
+use crate::value::complete::special::attribute::tests::prop::value as attr_value;
 
 pub fn value() -> impl Strategy<Value = BlobString> {
     any::<Vec<u8>>().prop_map(BlobString::from)

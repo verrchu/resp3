@@ -2,7 +2,7 @@ use bytes::Bytes;
 use proptest::prelude::*;
 
 use super::Boolean;
-use crate::value::complete::recursive::attribute::tests::prop::value as attr_value;
+use crate::value::complete::special::attribute::tests::prop::value as attr_value;
 
 pub fn value() -> impl Strategy<Value = Boolean> {
     any::<bool>().prop_map(Boolean::from)
